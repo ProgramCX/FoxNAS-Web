@@ -12,9 +12,11 @@
     "@vicons/ionicons5": "^0.13.0",
     "axios": "^1.13.4",
     "date-fns": "^4.1.0",
+    "echarts": "^6.0.0",
     "naive-ui": "^2.43.2",
     "pinia": "^3.0.4",
     "vue": "^3.5.24",
+    "vue-echarts": "^8.0.1",
     "vue-router": "^5.0.0"
   },
   "devDependencies": {

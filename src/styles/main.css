@@ -15,7 +15,7 @@
 
   /* 背景色 */
   --bg-color: #ffffff;
-  --bg-color-secondary: #f5f7f9;
+  --bg-color-secondary: #f8f9fa;
   --bg-color-tertiary: #f0f2f5;
 
   /* 文字颜色 */
@@ -24,21 +24,23 @@
   --text-color-tertiary: #909399;
 
   /* 边框颜色 */
-  --border-color: #dcdfe6;
-  --border-color-light: #e4e7ed;
+  --border-color: #e4e7ed;
+  --border-color-light: #ebeef5;
 
   /* 阴影 */
-  --box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  --box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --box-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.12);
 
   /* 圆角 */
   --border-radius: 8px;
   --border-radius-sm: 4px;
   --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
 
   /* 过渡动画 */
   --transition-duration: 0.3s;
-  --transition-timing: ease;
+  --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
 
   /* 侧边栏宽度 */
   --sidebar-width: 240px;
@@ -46,6 +48,13 @@
 
   /* 头部高度 */
   --header-height: 60px;
+
+  /* 间距 */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
 }
 
 /**
@@ -53,15 +62,19 @@
  */
 body.dark {
   --bg-color: #18181c;
-  --bg-color-secondary: #242428;
-  --bg-color-tertiary: #2a2a2e;
+  --bg-color-secondary: #1f1f23;
+  --bg-color-tertiary: #27272a;
 
   --text-color-base: #e6e8eb;
   --text-color-secondary: #a3a6ad;
   --text-color-tertiary: #787a80;
 
-  --border-color: #3d3d3d;
-  --border-color-light: #4a4a4a;
+  --border-color: #3d3d42;
+  --border-color-light: #2d2d32;
+
+  --box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  --box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.2);
+  --box-shadow-hover: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 /**
@@ -233,11 +246,18 @@ a:hover {
   :root {
     --sidebar-width: 0px;
     --sidebar-collapsed-width: 0px;
-    --header-height: 50px;
+    --header-height: 56px;
+    --spacing-lg: 16px;
+    --spacing-xl: 24px;
   }
 
   html {
     font-size: 14px;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
   }
 
   .hide-on-mobile {

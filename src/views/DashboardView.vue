@@ -5,7 +5,7 @@
       <n-card class="status-card" v-for="stat in statusCards" :key="stat.key">
         <div class="stat-content">
           <div class="stat-icon" :style="{ backgroundColor: stat.color }">
-            <n-icon :size="24" :color="stat.color">
+            <n-icon :size="28" color="#fff">
               <component :is="stat.icon" />
             </n-icon>
           </div>
@@ -17,9 +17,46 @@
       </n-card>
     </div>
 
-    <!-- 主要内容区 -->
+    <!-- 动态图表区域 -->
+    <div class="charts-grid">
+      <!-- CPU 使用率 -->
+      <n-card title="CPU 使用率" class="chart-card">
+        <template #header-extra>
+          <n-tag :type="cpuUsage > 80 ? 'error' : cpuUsage > 50 ? 'warning' : 'success'" size="small">
+            {{ cpuUsage.toFixed(1) }}%
+          </n-tag>
+        </template>
+        <div ref="cpuChartRef" class="chart-container"></div>
+      </n-card>
+
+      <!-- 内存使用率 -->
+      <n-card title="内存剩余情况" class="chart-card">
+        <template #header-extra>
+          <n-tag :type="memoryUsage > 80 ? 'error' : memoryUsage > 50 ? 'warning' : 'success'" size="small">
+            {{ memoryUsage.toFixed(1) }}%
+          </n-tag>
+        </template>
+        <div ref="memoryChartRef" class="chart-container"></div>
+        <div class="memory-info">
+          <span>已用: {{ formatBytes(memoryUsed) }}</span>
+          <span>总计: {{ formatBytes(memoryTotal) }}</span>
+        </div>
+      </n-card>
+
+      <!-- 网络流量 -->
+      <n-card title="网络流量" class="chart-card">
+        <template #header-extra>
+          <div class="network-stats">
+            <span class="download"><n-icon color="#18a058"><ArrowDownOutline /></n-icon> {{ formatSpeed(totalDownloadSpeed) }}</span>
+            <span class="upload"><n-icon color="#f0a020"><ArrowUpOutline /></n-icon> {{ formatSpeed(totalUploadSpeed) }}</span>
+          </div>
+        </template>
+        <div ref="networkChartRef" class="chart-container"></div>
+      </n-card>
+    </div>
+
+    <!-- 硬件信息 -->
     <div class="dashboard-grid">
-      <!-- 硬件信息 -->
       <n-card title="硬件信息" class="hardware-card">
         <template #header-extra>
           <n-button text type="primary" @click="fetchHardwareInfo" :loading="loadingHardware">
@@ -28,67 +65,97 @@
           </n-button>
         </template>
         <n-spin :show="loadingHardware">
-          <div class="hardware-info" v-if="hardwareInfo">
+          <div class="hardware-info" v-if="hardwareData">
+            <!-- 操作系统 -->
+            <div class="info-section">
+              <div class="section-header">
+                <n-icon><LaptopOutline /></n-icon>
+                <span>系统信息</span>
+              </div>
+              <div class="info-row">
+                <span class="info-label">操作系统:</span>
+                <span class="info-value">{{ hardwareData.operatingSystem || '未知' }}</span>
+              </div>
+            </div>
+
             <!-- CPU信息 -->
-            <div class="info-section" v-if="hardwareInfo.cpu">
+            <div class="info-section" v-if="hardwareData.cpuModel">
               <div class="section-header">
                 <n-icon><HardwareChipOutline /></n-icon>
-                <span>CPU</span>
+                <span>处理器</span>
               </div>
-              <n-progress
-                type="line"
-                :percentage="hardwareInfo.cpu.usage"
-                :indicator-placement="'inside'"
-                :color="getProgressColor(hardwareInfo.cpu.usage)"
-              >
-                <span class="progress-text">{{ hardwareInfo.cpu.usage }}%</span>
-              </n-progress>
               <div class="info-row">
                 <span class="info-label">型号:</span>
-                <span class="info-value">{{ hardwareInfo.cpu.name }}</span>
+                <span class="info-value">{{ hardwareData.cpuModel }}</span>
               </div>
-              <div class="info-row">
-                <span class="info-label">核心/线程:</span>
-                <span class="info-value">{{ hardwareInfo.cpu.cores }} 核 / {{ hardwareInfo.cpu.threads }} 线程</span>
+              <div class="info-row" v-if="hardwareData.cpuVendor">
+                <span class="info-label">厂商:</span>
+                <span class="info-value">{{ hardwareData.cpuVendor }}</span>
+              </div>
+            </div>
+
+            <!-- 主板信息 -->
+            <div class="info-section" v-if="hardwareData.mainBoardModel || hardwareData.mainBoardVendor">
+              <div class="section-header">
+                <n-icon><GridOutline /></n-icon>
+                <span>主板</span>
+              </div>
+              <div class="info-row" v-if="hardwareData.mainBoardVendor">
+                <span class="info-label">厂商:</span>
+                <span class="info-value">{{ hardwareData.mainBoardVendor }}</span>
+              </div>
+              <div class="info-row" v-if="hardwareData.mainBoardModel && hardwareData.mainBoardModel !== 'unknown'">
+                <span class="info-label">型号:</span>
+                <span class="info-value">{{ hardwareData.mainBoardModel }}</span>
               </div>
             </div>
 
             <!-- 内存信息 -->
-            <div class="info-section" v-if="hardwareInfo.memory">
+            <div class="info-section" v-if="hardwareData.memoryList && hardwareData.memoryList.length">
               <div class="section-header">
                 <n-icon><BarChartOutline /></n-icon>
-                <span>内存</span>
+                <span>内存 ({{ getTotalMemory() }}GB)</span>
               </div>
-              <n-progress
-                type="line"
-                :percentage="getMemoryUsage()"
-                :indicator-placement="'inside'"
-                :color="getProgressColor(getMemoryUsage())"
-              >
-                <span class="progress-text">{{ formatBytes(hardwareInfo.memory.used) }} / {{ formatBytes(hardwareInfo.memory.total) }}</span>
-              </n-progress>
+              <div class="memory-list">
+                <div class="memory-item" v-for="(mem, index) in hardwareData.memoryList" :key="index">
+                  <div class="info-row">
+                    <span class="info-label">插槽 {{ index + 1 }}:</span>
+                    <span class="info-value">{{ mem.vendor }} {{ mem.model }} {{ mem.sizeGb }}GB</span>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <!-- 磁盘信息 -->
-            <div class="info-section" v-if="hardwareInfo.disk && hardwareInfo.disk.length">
+            <!-- 存储信息 -->
+            <div class="info-section" v-if="hardwareData.diskList && hardwareData.diskList.length">
               <div class="section-header">
                 <n-icon><LibraryOutline /></n-icon>
-                <span>存储</span>
+                <span>存储 ({{ getTotalDisk() }}GB)</span>
               </div>
               <div class="disk-list">
-                <div class="disk-item" v-for="(disk, index) in hardwareInfo.disk" :key="index">
+                <div class="disk-item" v-for="(disk, index) in hardwareData.diskList" :key="index">
                   <div class="disk-header">
-                    <span class="disk-name">{{ disk.mountPoint || disk.device }}</span>
-                    <span class="disk-usage">{{ disk.usage }}</span>
+                    <span class="disk-name">{{ disk.model || disk.vendorOrSerial }}</span>
                   </div>
-                  <n-progress
-                    type="line"
-                    :percentage="parseFloat(disk.usage)"
-                    :color="getProgressColor(parseFloat(disk.usage))"
-                  />
                   <div class="disk-detail">
-                    <span>已用: {{ formatBytes(disk.used) }}</span>
-                    <span>可用: {{ formatBytes(disk.available) }}</span>
+                    <span>容量: {{ disk.sizeGb }}GB </span>
+                    <span v-if="disk.vendorOrSerial && disk.vendorOrSerial !== disk.model">序列号: {{ disk.vendorOrSerial }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 显卡信息 -->
+            <div class="info-section" v-if="hardwareData.gpuList && hardwareData.gpuList.length">
+              <div class="section-header">
+                <n-icon><TvOutline /></n-icon>
+                <span>显卡</span>
+              </div>
+              <div class="gpu-list">
+                <div class="gpu-item" v-for="(gpu, index) in hardwareData.gpuList" :key="index">
+                  <div class="info-row">
+                    <span class="info-label">{{ index + 1 }}.</span>
+                    <span class="info-value">{{ gpu.model }}</span>
                   </div>
                 </div>
               </div>
@@ -98,34 +165,28 @@
         </n-spin>
       </n-card>
 
-      <!-- 网络信息 -->
-      <n-card title="网络流量" class="network-card">
-        <template #header-extra>
-          <n-button text type="primary" @click="fetchHardwareInfo" :loading="loadingHardware">
-            <template #icon><n-icon><RefreshOutline /></n-icon></template>
-            刷新
-          </n-button>
-        </template>
-        <n-spin :show="loadingHardware">
-          <div class="network-list" v-if="hardwareInfo?.network?.length">
-            <div class="network-item" v-for="(net, index) in hardwareInfo.network" :key="index">
-              <div class="network-header">
-                <n-icon><WifiOutline /></n-icon>
-                <span class="network-name">{{ net.name }}</span>
+      <!-- 磁盘使用情况 -->
+      <n-card title="磁盘使用情况" class="disk-usage-card">
+        <n-spin :show="loadingDisk">
+          <div class="disk-usage-list" v-if="diskUsageList.length">
+            <div class="disk-usage-item" v-for="(disk, index) in diskUsageList" :key="index">
+              <div class="disk-usage-header">
+                <span class="disk-name">{{ disk.name }}</span>
+                <span class="disk-percent">{{ disk.usage }}%</span>
               </div>
-              <div class="network-stats">
-                <div class="stat-item">
-                  <n-icon color="#18a058"><ArrowDownOutline /></n-icon>
-                  <span>下载: {{ net.downloadSpeed }}</span>
-                </div>
-                <div class="stat-item">
-                  <n-icon color="#f0a020"><ArrowUpOutline /></n-icon>
-                  <span>上传: {{ net.uploadSpeed }}</span>
-                </div>
+              <n-progress
+                type="line"
+                :percentage="parseFloat(disk.usage)"
+                :color="getProgressColor(parseFloat(disk.usage))"
+                :show-indicator="false"
+              />
+              <div class="disk-usage-detail">
+                <span>已用: {{ formatBytes(disk.used) }}</span>
+                <span>可用: {{ formatBytes(disk.available) }}</span>
               </div>
             </div>
           </div>
-          <n-empty v-else description="暂无网络信息" />
+          <n-empty v-else-if="!loadingDisk" description="暂无磁盘信息" />
         </n-spin>
       </n-card>
     </div>
@@ -155,24 +216,27 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { hardwareService } from '@/api/services/hardware'
 import { useAuthStore } from '@/stores/auth'
+import * as echarts from 'echarts'
 import type { HardwareInfoDTO } from '@/types'
 import {
   RefreshOutline,
   HardwareChipOutline,
   BarChartOutline,
   LibraryOutline,
-  WifiOutline,
   ArrowDownOutline,
   ArrowUpOutline,
   FolderOutline,
   PeopleOutline,
   CloudOutline,
   SettingsOutline,
+  LaptopOutline,
+  GridOutline,
+  TvOutline,
 } from '@vicons/ionicons5'
 
 const router = useRouter()
@@ -181,8 +245,50 @@ const authStore = useAuthStore()
 
 // 状态
 const hardwareInfo = ref<HardwareInfoDTO | null>(null)
+const hardwareData = ref<any>(null)
 const loadingHardware = ref(false)
+const loadingDisk = ref(false)
 const systemStatus = ref('online')
+const cpuChartRef = ref<HTMLElement | null>(null)
+const memoryChartRef = ref<HTMLElement | null>(null)
+const networkChartRef = ref<HTMLElement | null>(null)
+
+// 实时数据
+const cpuUsage = ref(0)
+const memoryTotal = ref(0)
+const memoryUsed = ref(0)
+const memoryUsage = computed(() => memoryTotal.value > 0 ? (memoryUsed.value / memoryTotal.value) * 100 : 0)
+const totalDownloadSpeed = ref(0)
+const totalUploadSpeed = ref(0)
+const diskUsageList = ref<Array<{ name: string; usage: string; used: number; available: number }>>([])
+
+// 图表实例
+let cpuChart: echarts.ECharts | null = null
+let memoryChart: echarts.ECharts | null = null
+let networkChart: echarts.ECharts | null = null
+
+// 数据队列（最多50个点）
+const cpuDataQueue = ref<number[]>([])
+const memoryDataQueue = ref<number[]>([])
+const networkUploadQueue = ref<number[]>([])
+const networkDownloadQueue = ref<number[]>([])
+
+// WebSocket
+let websocket: WebSocket | null = null
+let reconnectAttempts = 0
+const maxReconnectAttempts = 10
+
+// 获取新格式的硬件数据
+interface HardwareData {
+  operatingSystem?: string
+  cpuModel?: string
+  cpuVendor?: string
+  mainBoardModel?: string
+  mainBoardVendor?: string
+  memoryList?: Array<{ vendor?: string; model?: string; sizeGb: number }>
+  diskList?: Array<{ model?: string; vendorOrSerial?: string; sizeGb: number }>
+  gpuList?: Array<{ model?: string; vendor?: string }>
+}
 
 // 计算属性
 const isAdmin = computed(() => authStore.username === 'admin')
@@ -199,25 +305,252 @@ const statusCards = computed(() => [
   {
     key: 'cpu',
     label: 'CPU使用率',
-    value: hardwareInfo.value?.cpu?.usage ? `${hardwareInfo.value.cpu.usage}%` : '-',
+    value: cpuUsage.value.toFixed(1) + '%',
     icon: HardwareChipOutline,
-    color: '#2080f0',
+    color: cpuUsage.value > 80 ? '#d03050' : cpuUsage.value > 50 ? '#f0a020' : '#18a058',
   },
   {
     key: 'memory',
     label: '内存使用率',
-    value: hardwareInfo.value?.memory ? getMemoryUsage() + '%' : '-',
+    value: memoryUsage.value.toFixed(1) + '%',
     icon: BarChartOutline,
-    color: '#f0a020',
+    color: memoryUsage.value > 80 ? '#d03050' : memoryUsage.value > 50 ? '#f0a020' : '#18a058',
   },
   {
-    key: 'disk',
-    label: '磁盘使用率',
-    value: hardwareInfo.value?.disk?.[0]?.usage || '-',
-    icon: LibraryOutline,
-    color: '#18a058',
+    key: 'network',
+    label: '网络下载',
+    value: formatSpeed(totalDownloadSpeed.value),
+    icon: ArrowDownOutline,
+    color: '#2080f0',
   },
 ])
+
+/**
+ * 初始化图表
+ */
+function initCharts() {
+  // CPU 图表
+  if (cpuChartRef.value) {
+    cpuChart = echarts.init(cpuChartRef.value)
+    cpuChart.setOption({
+      tooltip: { trigger: 'axis' },
+      grid: { left: 50, right: 20, top: 30, bottom: 30 },
+      xAxis: { type: 'category', boundaryGap: false, show: false },
+      yAxis: { type: 'value', min: 0, max: 100, axisLabel: { formatter: '{value}%' } },
+      series: [{
+        name: 'CPU使用率',
+        type: 'line',
+        smooth: true,
+        areaStyle: { opacity: 0.3 },
+        lineStyle: { width: 2 },
+        data: [],
+        itemStyle: { color: '#2080f0' },
+      }],
+    })
+  }
+
+  // 内存图表
+  if (memoryChartRef.value) {
+    memoryChart = echarts.init(memoryChartRef.value)
+    memoryChart.setOption({
+      tooltip: { 
+        trigger: 'axis', 
+        formatter: (params: any) => `剩余内存: ${params[0].value.toFixed(2)} GB` 
+      },
+      grid: { left: 60, right: 20, top: 30, bottom: 30 },
+      xAxis: { type: 'category', boundaryGap: false, show: false },
+      yAxis: { 
+        type: 'value', 
+        min: 0,
+        axisLabel: { formatter: '{value} GB' }
+      },
+      series: [{
+        name: '剩余内存',
+        type: 'line',
+        smooth: true,
+        areaStyle: { opacity: 0.3 },
+        lineStyle: { width: 2 },
+        data: [],
+        itemStyle: { color: '#f0a020' },
+      }],
+    })
+  }
+
+  // 网络图表
+  if (networkChartRef.value) {
+    networkChart = echarts.init(networkChartRef.value)
+    networkChart.setOption({
+      tooltip: { trigger: 'axis', formatter: (params: any) => `${params[0].seriesName}: ${params[0].value.toFixed(2)} KB/s` },
+      legend: { data: ['上传', '下载'], top: 0 },
+      grid: { left: 50, right: 20, top: 40, bottom: 30 },
+      xAxis: { type: 'category', boundaryGap: false, show: false },
+      yAxis: { type: 'value', axisLabel: { formatter: '{value} KB/s' } },
+      series: [
+        {
+          name: '上传',
+          type: 'line',
+          smooth: true,
+          lineStyle: { width: 2 },
+          data: [],
+          itemStyle: { color: '#f0a020' },
+        },
+        {
+          name: '下载',
+          type: 'line',
+          smooth: true,
+          lineStyle: { width: 2 },
+          data: [],
+          itemStyle: { color: '#18a058' },
+        },
+      ],
+    })
+  }
+}
+
+/**
+ * 更新图表数据
+ */
+function updateCharts() {
+  // 更新 CPU 图表
+  if (cpuChart && cpuDataQueue.value.length > 0) {
+    cpuChart.setOption({
+      series: [{ data: cpuDataQueue.value }],
+    })
+  }
+
+  // 更新内存图表
+  if (memoryChart && memoryDataQueue.value.length > 0) {
+    memoryChart.setOption({
+      series: [{ data: memoryDataQueue.value }],
+    })
+  }
+
+  // 更新网络图表
+  if (networkChart && networkUploadQueue.value.length > 0) {
+    networkChart.setOption({
+      series: [
+        { name: '上传', data: networkUploadQueue.value },
+        { name: '下载', data: networkDownloadQueue.value },
+      ],
+    })
+  }
+}
+
+/**
+ * 连接 WebSocket
+ */
+function connectWebSocket() {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8848'
+  const token = localStorage.getItem('foxnas_token')
+  const wsUrl = `${apiBaseUrl.replace('http', 'ws')}/ws/overview?token=${token}`
+
+  try {
+    websocket = new WebSocket(wsUrl)
+
+    websocket.onopen = () => {
+      console.log('WebSocket connected')
+      systemStatus.value = 'online'
+      reconnectAttempts = 0
+    }
+
+    websocket.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        handleRealtimeData(data)
+      } catch (e) {
+        console.error('Failed to parse WebSocket message:', e)
+      }
+    }
+
+    websocket.onclose = () => {
+      console.log('WebSocket disconnected')
+      systemStatus.value = 'offline'
+      attemptReconnect()
+    }
+
+    websocket.onerror = (error) => {
+      console.error('WebSocket error:', error)
+      systemStatus.value = 'offline'
+    }
+  } catch (error) {
+    console.error('Failed to connect WebSocket:', error)
+    systemStatus.value = 'offline'
+  }
+}
+
+/**
+ * 尝试重连
+ */
+function attemptReconnect() {
+  if (reconnectAttempts < maxReconnectAttempts) {
+    reconnectAttempts++
+    console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts})...`)
+    setTimeout(connectWebSocket, 3000)
+  }
+}
+
+/**
+ * 处理实时数据
+ */
+function handleRealtimeData(data: any) {
+  // CPU 使用率
+  if (data.cpu !== undefined) {
+    cpuUsage.value = data.cpu
+    cpuDataQueue.value.push(data.cpu)
+    if (cpuDataQueue.value.length > 50) {
+      cpuDataQueue.value.shift()
+    }
+  }
+
+  // 内存信息
+  if (data.memory) {
+    memoryTotal.value = data.memory.total || 0
+    memoryUsed.value = data.memory.used || 0
+    // 转换为 GB 存入队列用于图表显示
+    const freeMemoryGB = (memoryTotal.value - memoryUsed.value) / (1024 * 1024 * 1024)
+    memoryDataQueue.value.push(parseFloat(freeMemoryGB.toFixed(2)))
+    if (memoryDataQueue.value.length > 50) {
+      memoryDataQueue.value.shift()
+    }
+  }
+
+  // 网络信息
+  if (data.network && Array.isArray(data.network)) {
+    let uploadTotal = 0
+    let downloadTotal = 0
+
+    data.network.forEach((net: any) => {
+      uploadTotal += net.sentSpeed || 0
+      downloadTotal += net.recvSpeed || 0
+    })
+
+    totalUploadSpeed.value = uploadTotal
+    totalDownloadSpeed.value = downloadTotal
+
+    // 转换为 KB/s
+    const uploadKB = uploadTotal / 1024
+    const downloadKB = downloadTotal / 1024
+
+    networkUploadQueue.value.push(uploadKB)
+    networkDownloadQueue.value.push(downloadKB)
+    if (networkUploadQueue.value.length > 50) {
+      networkUploadQueue.value.shift()
+      networkDownloadQueue.value.shift()
+    }
+  }
+
+  // 磁盘信息
+  if (data.disk && Array.isArray(data.disk)) {
+    diskUsageList.value = data.disk.map((disk: any) => ({
+      name: disk.name,
+      usage: ((disk.used / disk.total) * 100).toFixed(1),
+      used: disk.used,
+      available: disk.free,
+    }))
+  }
+
+  updateCharts()
+}
 
 /**
  * 获取硬件信息
@@ -225,22 +558,18 @@ const statusCards = computed(() => [
 async function fetchHardwareInfo() {
   loadingHardware.value = true
   try {
-    hardwareInfo.value = await hardwareService.getHardwareInfo()
+    const response = await hardwareService.getHardwareInfo()
+    if (response && typeof response === 'object' && 'data' in response) {
+      hardwareData.value = (response as any).data
+    } else {
+      hardwareInfo.value = response as HardwareInfoDTO
+    }
   } catch (error: unknown) {
     const err = error as Error
     message.error(err.message || '获取硬件信息失败')
   } finally {
     loadingHardware.value = false
   }
-}
-
-/**
- * 计算内存使用率
- */
-function getMemoryUsage(): number {
-  if (!hardwareInfo.value?.memory) return 0
-  const { used, total } = hardwareInfo.value.memory
-  return Math.round((used / total) * 100)
 }
 
 /**
@@ -255,6 +584,29 @@ function formatBytes(bytes: number): string {
 }
 
 /**
+ * 获取合适的单位（用于图表轴）
+ */
+function getUnitAndValue(bytes: number): { value: number; unit: string } {
+  if (bytes === 0) return { value: 0, unit: 'B' }
+  const k = 1024
+  const units: string[] = ['B', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1)
+  return {
+    value: bytes / Math.pow(k, i),
+    unit: units[i],
+  }
+}
+
+/**
+ * 格式化速度
+ */
+function formatSpeed(bytes: number): string {
+  if (bytes === 0) return '0 B/s'
+  const { value, unit } = getUnitAndValue(bytes)
+  return `${value.toFixed(2)} ${unit}/s`
+}
+
+/**
  * 获取进度条颜色
  */
 function getProgressColor(percentage: number): string {
@@ -263,14 +615,53 @@ function getProgressColor(percentage: number): string {
   return '#d03050'
 }
 
+/**
+ * 获取总内存容量
+ */
+function getTotalMemory(): number {
+  if (!hardwareData.value?.memoryList || !Array.isArray(hardwareData.value.memoryList)) return 0
+  return hardwareData.value.memoryList.reduce((total: number, mem: { sizeGb?: number }) => total + (mem.sizeGb || 0), 0)
+}
+
+/**
+ * 获取总磁盘容量
+ */
+function getTotalDisk(): number {
+  if (!hardwareData.value?.diskList || !Array.isArray(hardwareData.value.diskList)) return 0
+  return hardwareData.value.diskList.reduce((total: number, disk: { sizeGb?: number }) => total + (disk.sizeGb || 0), 0)
+}
+
+/**
+ * 处理窗口大小变化
+ */
+function handleResize() {
+  cpuChart?.resize()
+  memoryChart?.resize()
+  networkChart?.resize()
+}
+
 // 生命周期
 onMounted(() => {
-  fetchHardwareInfo()
+  nextTick(() => {
+    initCharts()
+    connectWebSocket()
+    fetchHardwareInfo()
+    window.addEventListener('resize', handleResize)
+  })
+})
+
+onUnmounted(() => {
+  if (websocket) {
+    websocket.close()
+  }
+  cpuChart?.dispose()
+  memoryChart?.dispose()
+  networkChart?.dispose()
+  window.removeEventListener('resize', handleResize)
 })
 </script>
 
 <script lang="ts">
-// 额外导入
 import { CheckmarkCircleOutline } from '@vicons/ionicons5'
 </script>
 
@@ -324,6 +715,51 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
   color: var(--text-color-tertiary);
 }
 
+/* 动态图表区域 */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.chart-card {
+  border-radius: 12px;
+}
+
+.chart-container {
+  height: 180px;
+  width: 100%;
+}
+
+.network-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.network-stats .download,
+.network-stats .upload {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+:deep(.n-card__header) {
+  flex-wrap: wrap;
+}
+
+:deep(.n-card__header-extra) {
+  margin-left: auto;
+}
+
+.memory-info {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--text-color-tertiary);
+}
+
 /* 内容网格 */
 .dashboard-grid {
   display: grid;
@@ -333,7 +769,7 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
 
 /* 硬件信息 */
 .hardware-card,
-.network-card {
+.disk-usage-card {
   border-radius: 12px;
 }
 
@@ -355,11 +791,6 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
   color: var(--text-color-base);
 }
 
-.progress-text {
-  color: #fff;
-  font-weight: 500;
-}
-
 .info-row {
   display: flex;
   margin-top: 8px;
@@ -375,20 +806,20 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
   color: var(--text-color-base);
 }
 
-/* 磁盘列表 */
-.disk-list {
+/* 磁盘使用情况 */
+.disk-usage-list {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.disk-item {
+.disk-usage-item {
   padding: 12px;
   background: var(--bg-color-secondary);
   border-radius: 8px;
 }
 
-.disk-header {
+.disk-usage-header {
   display: flex;
   justify-content: space-between;
   margin-bottom: 8px;
@@ -399,12 +830,12 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
   color: var(--text-color-base);
 }
 
-.disk-usage {
+.disk-percent {
   font-weight: 500;
   color: var(--text-color-base);
 }
 
-.disk-detail {
+.disk-usage-detail {
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
@@ -463,6 +894,7 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
 
 /* 响应式 */
 @media screen and (max-width: 768px) {
+  .charts-grid,
   .dashboard-grid {
     grid-template-columns: 1fr;
   }

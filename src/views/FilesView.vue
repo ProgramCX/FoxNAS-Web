@@ -24,77 +24,228 @@
       </n-button>
     </div>
 
+    <!-- 移动端路径显示 -->
+    <div class="mobile-path-bar" v-if="isMobile && currentTab">
+      <n-select
+        v-model:value="selectedRootPath"
+        :options="authedDirOptions"
+        placeholder="选择目录"
+        size="small"
+        style="flex: 1; max-width: 150px;"
+        @update:value="handleRootPathChange"
+      />
+      <div class="mobile-path-text">
+        <n-icon size="14"><FolderOutline /></n-icon>
+        <span>{{ getShortPath(currentTab.path) }}</span>
+      </div>
+    </div>
+
     <!-- 工具栏 -->
     <n-card class="toolbar-card">
-      <n-space :size="8" wrap>
-        <!-- 导航按钮 -->
-        <n-button-group>
-          <n-tooltip>
-            <template #trigger>
-              <n-button :disabled="!canGoBack" @click="goBack" quaternary>
-                <template #icon><n-icon><ChevronBackOutline /></n-icon></template>
-              </n-button>
-            </template>
-            后退
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button :disabled="!canGoForward" @click="goForward" quaternary>
-                <template #icon><n-icon><ChevronForwardOutline /></n-icon></template>
-              </n-button>
-            </template>
-            前进
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button :disabled="currentPath === selectedRootPath" @click="goUp" quaternary>
-                <template #icon><n-icon><ArrowUpOutline /></n-icon></template>
-              </n-button>
-            </template>
-            上级目录
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="refreshCurrentTab" :loading="currentTab?.loading">
-                <template #icon><n-icon><RefreshOutline /></n-icon></template>
-              </n-button>
-            </template>
-            刷新
-          </n-tooltip>
-        </n-button-group>
+      <!-- 桌面端工具栏 -->
+      <div class="toolbar-desktop hide-on-mobile">
+        <n-space :size="8" wrap :wrap-item="false">
+          <!-- 导航按钮 -->
+          <n-button-group>
+            <n-tooltip>
+              <template #trigger>
+                <n-button :disabled="!canGoBack" @click="goBack" quaternary size="small">
+                  <template #icon><n-icon><ChevronBackOutline /></n-icon></template>
+                </n-button>
+              </template>
+              后退
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button :disabled="!canGoForward" @click="goForward" quaternary size="small">
+                  <template #icon><n-icon><ChevronForwardOutline /></n-icon></template>
+                </n-button>
+              </template>
+              前进
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button :disabled="currentPath === selectedRootPath" @click="goUp" quaternary size="small">
+                  <template #icon><n-icon><ArrowUpOutline /></n-icon></template>
+                </n-button>
+              </template>
+              上级目录
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="refreshCurrentTab" :loading="currentTab?.loading" size="small">
+                  <template #icon><n-icon><RefreshOutline /></n-icon></template>
+                </n-button>
+              </template>
+              刷新
+            </n-tooltip>
+          </n-button-group>
 
-        <n-divider vertical />
+          <n-divider vertical />
 
-        <!-- 路径导航 -->
-        <div class="path-nav">
-          <n-select
-            v-model:value="selectedRootPath"
-            :options="authedDirOptions"
-            placeholder="根目录"
-            style="width: 160px"
+          <!-- 路径导航 -->
+          <div class="path-nav">
+            <n-select
+              v-model:value="selectedRootPath"
+              :options="authedDirOptions"
+              placeholder="根目录"
+              style="width: 160px"
+              size="small"
+              @update:value="handleRootPathChange"
+            />
+            <span class="path-separator">/</span>
+            <n-breadcrumb v-if="currentTab">
+              <n-breadcrumb-item
+                v-for="(part, index) in getPathParts(currentTab.path)"
+                :key="index"
+                @click="navigateToPathByIndex(index)"
+              >
+                {{ part || '根目录' }}
+              </n-breadcrumb-item>
+            </n-breadcrumb>
+          </div>
+
+          <n-divider vertical />
+
+          <!-- 搜索框 -->
+          <n-input
+            v-model:value="searchKeyword"
+            placeholder="搜索文件..."
             size="small"
-            @update:value="handleRootPathChange"
-          />
-          <span class="path-separator">/</span>
-          <n-breadcrumb v-if="currentTab">
-            <n-breadcrumb-item
-              v-for="(part, index) in getPathParts(currentTab.path)"
-              :key="index"
-              @click="navigateToPathByIndex(index)"
-            >
-              {{ part || '根目录' }}
-            </n-breadcrumb-item>
-          </n-breadcrumb>
-        </div>
+            style="width: 200px"
+            clearable
+            @keyup.enter="searchFiles"
+            @clear="clearSearch"
+          >
+            <template #prefix>
+              <n-icon><SearchOutline /></n-icon>
+            </template>
+          </n-input>
 
-        <n-divider vertical />
+          <n-divider vertical />
+
+          <!-- 操作按钮 -->
+          <n-button-group>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="copyFiles" :disabled="selectedRows.length === 0 || !canWrite" size="small">
+                  <template #icon><n-icon><CopyOutline /></n-icon></template>
+                </n-button>
+              </template>
+              复制
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="cutFiles" :disabled="selectedRows.length === 0 || !canWrite" size="small">
+                  <template #icon><n-icon><CutOutline /></n-icon></template>
+                </n-button>
+              </template>
+              剪切
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="pasteFiles" :disabled="!canPaste" size="small">
+                  <template #icon><n-icon><ClipboardOutline /></n-icon></template>
+                </n-button>
+              </template>
+              粘贴
+            </n-tooltip>
+          </n-button-group>
+
+          <n-divider vertical />
+
+          <n-button-group>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="downloadSelectedFiles" :disabled="selectedRows.length === 0 || !canDownload" size="small">
+                  <template #icon><n-icon><DownloadOutline /></n-icon></template>
+                </n-button>
+              </template>
+              下载
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="deleteSelectedFiles" :disabled="selectedRows.length === 0 || !canDelete" size="small">
+                  <template #icon><n-icon><TrashOutline /></n-icon></template>
+                </n-button>
+              </template>
+              删除
+            </n-tooltip>
+          </n-button-group>
+
+          <n-divider vertical />
+
+          <n-button-group>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="showUploadDialog = true" :disabled="!canUpload" size="small" type="primary">
+                  <template #icon><n-icon><CloudUploadOutline /></n-icon></template>
+                  上传
+                </n-button>
+              </template>
+              上传
+            </n-tooltip>
+            <n-tooltip>
+              <template #trigger>
+                <n-button @click="showCreateDirDialog = true" :disabled="!canWrite" size="small">
+                  <template #icon><n-icon><AddOutline /></n-icon></template>
+                </n-button>
+              </template>
+              新建文件夹
+            </n-tooltip>
+          </n-button-group>
+        </n-space>
+
+        <!-- 剪贴板状态 -->
+        <div class="clipboard-status" v-if="clipboardData.files.length > 0">
+          <n-tag size="small" :type="clipboardData.isCut ? 'warning' : 'info'">
+            <template #icon>
+              <n-icon><CopyOutline /></n-icon>
+            </template>
+            {{ clipboardData.isCut ? '已剪切' : '已复制' }} {{ clipboardData.files.length }} 个文件
+          </n-tag>
+          <n-button text size="small" @click="clearClipboard">清空</n-button>
+        </div>
+      </div>
+
+      <!-- 移动端工具栏 -->
+      <div class="toolbar-mobile hide-on-desktop">
+        <div class="mobile-toolbar-row">
+          <!-- 导航按钮 -->
+          <n-button-group class="nav-buttons">
+            <n-button :disabled="!canGoBack" @click="goBack" quaternary size="small" circle>
+              <template #icon><n-icon><ChevronBackOutline /></n-icon></template>
+            </n-button>
+            <n-button :disabled="!canGoForward" @click="goForward" quaternary size="small" circle>
+              <template #icon><n-icon><ChevronForwardOutline /></n-icon></template>
+            </n-button>
+            <n-button :disabled="currentPath === selectedRootPath" @click="goUp" quaternary size="small" circle>
+              <template #icon><n-icon><ArrowUpOutline /></n-icon></template>
+            </n-button>
+            <n-button @click="refreshCurrentTab" :loading="currentTab?.loading" quaternary size="small" circle>
+              <template #icon><n-icon><RefreshOutline /></n-icon></template>
+            </n-button>
+          </n-button-group>
+
+          <!-- 操作按钮 -->
+          <n-button-group class="action-buttons">
+            <n-button @click="showUploadDialog = true" :disabled="!canUpload" type="primary" size="small" circle>
+              <template #icon><n-icon><CloudUploadOutline /></n-icon></template>
+            </n-button>
+            <n-button @click="showCreateDirDialog = true" :disabled="!canWrite" quaternary size="small" circle>
+              <template #icon><n-icon><AddOutline /></n-icon></template>
+            </n-button>
+            <n-button @click="showMoreActions = true" quaternary size="small" circle>
+              <template #icon><n-icon><EllipsisVerticalOutline /></n-icon></template>
+            </n-button>
+          </n-button-group>
+        </div>
 
         <!-- 搜索框 -->
         <n-input
           v-model:value="searchKeyword"
-          placeholder="搜索文件..."
+          placeholder="搜索..."
           size="small"
-          style="width: 200px"
           clearable
           @keyup.enter="searchFiles"
           @clear="clearSearch"
@@ -104,93 +255,71 @@
           </template>
         </n-input>
 
-        <n-divider vertical />
-
-        <!-- 操作按钮 -->
-        <n-button-group>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="copyFiles" :disabled="selectedRows.length === 0 || !canWrite">
-                <template #icon><n-icon><CopyOutline /></n-icon></template>
-              </n-button>
-            </template>
-            复制
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="cutFiles" :disabled="selectedRows.length === 0 || !canWrite">
-                <template #icon><n-icon><CutOutline /></n-icon></template>
-              </n-button>
-            </template>
-            剪切
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="pasteFiles" :disabled="!canPaste">
-                <template #icon><n-icon><ClipboardOutline /></n-icon></template>
-              </n-button>
-            </template>
-            粘贴
-          </n-tooltip>
-        </n-button-group>
-
-        <n-divider vertical />
-
-        <n-button-group>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="downloadSelectedFiles" :disabled="selectedRows.length === 0 || !canDownload">
-                <template #icon><n-icon><DownloadOutline /></n-icon></template>
-              </n-button>
-            </template>
-            下载
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="deleteSelectedFiles" :disabled="selectedRows.length === 0 || !canDelete">
-                <template #icon><n-icon><TrashOutline /></n-icon></template>
-              </n-button>
-            </template>
-            删除
-          </n-tooltip>
-        </n-button-group>
-
-        <n-divider vertical />
-
-        <n-button-group>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="showUploadDialog = true" :disabled="!canUpload">
-                <template #icon><n-icon><CloudUploadOutline /></n-icon></template>
-              </n-button>
-            </template>
-            上传
-          </n-tooltip>
-          <n-tooltip>
-            <template #trigger>
-              <n-button @click="showCreateDirDialog = true" :disabled="!canWrite">
-                <template #icon><n-icon><AddOutline /></n-icon></template>
-              </n-button>
-            </template>
-            新建文件夹
-          </n-tooltip>
-        </n-button-group>
-      </n-space>
-
-      <!-- 剪贴板状态 -->
-      <div class="clipboard-status" v-if="clipboardData.files.length > 0">
-        <n-tag size="small" :type="clipboardData.isCut ? 'warning' : 'info'">
-          <template #icon>
-            <n-icon><CopyOutline /></n-icon>
-          </template>
-          {{ clipboardData.isCut ? '已剪切' : '已复制' }} {{ clipboardData.files.length }} 个文件
-        </n-tag>
-        <n-button text size="small" @click="clearClipboard">清空</n-button>
+        <!-- 剪贴板状态 -->
+        <div class="clipboard-status-mobile" v-if="clipboardData.files.length > 0">
+          <n-tag size="small" :type="clipboardData.isCut ? 'warning' : 'info'">
+            {{ clipboardData.isCut ? '剪切' : '复制' }}{{ clipboardData.files.length }}个
+          </n-tag>
+          <n-button text size="small" @click="clearClipboard">清空</n-button>
+        </div>
       </div>
     </n-card>
 
+    <!-- 移动端更多操作抽屉 -->
+    <n-drawer v-model:show="showMoreActions" :width="280" placement="bottom">
+      <n-drawer-content title="更多操作" closable>
+        <n-space vertical :size="12">
+          <n-button 
+            block 
+            @click="copyFiles" 
+            :disabled="selectedRows.length === 0 || !canWrite"
+            :style="{ justifyContent: 'flex-start' }"
+          >
+            <template #icon><n-icon><CopyOutline /></n-icon></template>
+            复制 ({{ selectedRows.length }})
+          </n-button>
+          <n-button 
+            block 
+            @click="cutFiles" 
+            :disabled="selectedRows.length === 0 || !canWrite"
+            :style="{ justifyContent: 'flex-start' }"
+          >
+            <template #icon><n-icon><CutOutline /></n-icon></template>
+            剪切 ({{ selectedRows.length }})
+          </n-button>
+          <n-button 
+            block 
+            @click="pasteFiles" 
+            :disabled="!canPaste"
+            :style="{ justifyContent: 'flex-start' }"
+          >
+            <template #icon><n-icon><ClipboardOutline /></n-icon></template>
+            粘贴
+          </n-button>
+          <n-button 
+            block 
+            @click="downloadSelectedFiles" 
+            :disabled="selectedRows.length === 0 || !canDownload"
+            :style="{ justifyContent: 'flex-start' }"
+          >
+            <template #icon><n-icon><DownloadOutline /></n-icon></template>
+            下载 ({{ selectedRows.length }})
+          </n-button>
+          <n-button 
+            block 
+            @click="deleteSelectedFiles" 
+            :disabled="selectedRows.length === 0 || !canDelete"
+            :style="{ justifyContent: 'flex-start' }"
+          >
+            <template #icon><n-icon><TrashOutline /></n-icon></template>
+            删除 ({{ selectedRows.length }})
+          </n-button>
+        </n-space>
+      </n-drawer-content>
+    </n-drawer>
+
     <!-- 文件列表区域 -->
-    <n-card class="file-content-card" v-if="currentTab">
+    <n-card class="file-content-card" v-if="currentTab" ref="fileContentRef">
       <!-- 权限信息 -->
       <div v-if="currentAuthedDir" class="permission-info">
         <n-tag type="info" size="small">
@@ -205,19 +334,28 @@
         </n-space>
       </div>
 
-      <!-- 表格 -->
+      <!-- 文件列表 -->
       <n-spin :show="currentTab?.loading || false">
-        <n-data-table
-          :columns="tableColumns"
-          :data="currentTab?.filteredFileList || currentTab?.fileList || []"
-          :bordered="false"
-          :row-key="(row: FileInfo) => row.path"
-          :pagination="{ pageSize: 50, pageSizeOptions: [20, 50, 100, 200] }"
-          :row-class-name="(_rowIndex: number, rowData: FileInfo) => rowData.type === 'directory' ? 'clickable-row' : ''"
-          :row-props="rowProps"
-          v-model:checked-row-keys="selectedRows"
-          @update:checked-row-keys="handleSelectionChange"
-        />
+        <n-scrollbar style="max-height: calc(100vh - 320px);" @scroll="handleScroll">
+          <n-data-table
+            :columns="tableColumns"
+            :data="currentTab?.filteredFileList || currentTab?.fileList || []"
+            :bordered="false"
+            :row-key="(row: FileInfo) => row.path"
+            :pagination="false"
+            :row-props="rowProps"
+            v-model:checked-row-keys="selectedRows"
+            @update:checked-row-keys="handleSelectionChange"
+          />
+          <!-- 加载更多提示 -->
+          <div v-if="currentTab?.hasMore" class="load-more-hint">
+            <n-spin v-if="currentTab?.loadingMore" size="small" />
+            <span v-else>滚动加载更多...</span>
+          </div>
+          <div v-else-if="currentTab?.fileList?.length > 0" class="load-more-hint">
+            已加载全部 {{ currentTab?.totalCount }} 个项目
+          </div>
+        </n-scrollbar>
       </n-spin>
 
       <!-- 空状态 -->
@@ -237,12 +375,32 @@
     />
 
     <!-- 上传对话框 -->
-    <n-modal v-model:show="showUploadDialog" preset="dialog" title="上传文件" style="width: 600px">
+    <n-modal 
+      v-model:show="showUploadDialog" 
+      preset="dialog" 
+      title="上传文件" 
+      class="upload-modal"
+      :style="{ width: isMobile ? '95vw' : '600px', maxWidth: '600px' }"
+    >
       <!-- 上传模式选择 -->
-      <n-radio-group v-model:value="uploadMode" style="margin-bottom: 16px">
-        <n-radio value="file">上传文件</n-radio>
-        <n-radio value="directory">上传文件夹</n-radio>
-      </n-radio-group>
+      <div class="upload-mode-selector">
+        <n-radio-group v-model:value="uploadMode" size="medium">
+          <n-space>
+            <n-radio value="file">
+              <div class="upload-mode-option">
+                <n-icon size="18"><DocumentOutline /></n-icon>
+                <span>上传文件</span>
+              </div>
+            </n-radio>
+            <n-radio value="directory">
+              <div class="upload-mode-option">
+                <n-icon size="18"><FolderOutline /></n-icon>
+                <span>上传文件夹</span>
+              </div>
+            </n-radio>
+          </n-space>
+        </n-radio-group>
+      </div>
       
       <n-upload
         v-if="uploadMode === 'file'"
@@ -251,54 +409,77 @@
         :show-file-list="false"
         @change="handleFileUploadChange"
       >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3"><DocumentOutline /></n-icon>
+        <n-upload-dragger class="upload-dragger">
+          <div class="upload-icon">
+            <n-icon size="56" color="var(--primary-color)"><CloudUploadOutline /></n-icon>
           </div>
-          <n-text style="font-size: 16px">点击或拖拽文件到此区域上传</n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">支持单个或批量上传</n-p>
+          <div class="upload-text">点击或拖拽文件到此区域上传</div>
+          <div class="upload-hint">支持单个或批量上传，文件大小不限</div>
         </n-upload-dragger>
       </n-upload>
 
       <n-upload
         v-else
         directory
-       webkitdirectory
+        webkitdirectory
         :custom-request="handleDirectoryUpload"
         :show-file-list="false"
         @change="handleDirectoryUploadChange"
       >
-        <n-upload-dragger>
-          <div style="margin-bottom: 12px">
-            <n-icon size="48" :depth="3"><FolderOutline /></n-icon>
+        <n-upload-dragger class="upload-dragger">
+          <div class="upload-icon">
+            <n-icon size="56" color="var(--primary-color)"><FolderOutline /></n-icon>
           </div>
-          <n-text style="font-size: 16px">点击或拖拽文件夹到此区域上传</n-text>
-          <n-p depth="3" style="margin: 8px 0 0 0">将保持文件夹结构并自动创建目录</n-p>
+          <div class="upload-text">点击选择文件夹上传</div>
+          <div class="upload-hint">将保持文件夹结构并自动创建目录</div>
         </n-upload-dragger>
       </n-upload>
 
       <!-- 上传进度 -->
-      <div v-if="uploadProgress.length" class="upload-progress">
-        <n-divider />
-        <div class="upload-summary">
-          <n-tag :type="uploadFailedCount > 0 ? 'warning' : 'success'">
-            成功: {{ uploadSuccessCount }} / 失败: {{ uploadFailedCount }} / 总数: {{ uploadTotal }}
+      <div v-if="uploadProgress.length" class="upload-progress-section">
+        <div class="upload-progress-header">
+          <span class="progress-title">上传进度</span>
+          <n-tag :type="uploadFailedCount > 0 ? 'warning' : (uploadSuccessCount === uploadTotal ? 'success' : 'info')" size="small">
+            {{ uploadSuccessCount }}/{{ uploadTotal }} 完成
+            <template v-if="uploadFailedCount > 0">, {{ uploadFailedCount }} 失败</template>
           </n-tag>
         </div>
-        <div v-for="(item, index) in uploadProgress" :key="index" class="progress-item">
-          <span :title="item.fullPath">{{ item.name }}</span>
-          <n-progress type="line" :percentage="item.percentage" :status="item.status" />
-        </div>
+        <n-scrollbar style="max-height: 200px">
+          <div class="upload-progress-list">
+            <div v-for="(item, index) in uploadProgress" :key="index" class="progress-item">
+              <div class="progress-file-info">
+                <n-icon size="16" class="file-icon">
+                  <DocumentOutline />
+                </n-icon>
+                <span class="file-name" :title="item.fullPath || item.name">{{ item.name }}</span>
+              </div>
+              <n-progress 
+                type="line" 
+                :percentage="item.percentage" 
+                :status="item.status === 'error' ? 'error' : (item.percentage >= 100 ? 'success' : 'default')"
+                :show-indicator="false"
+                :height="6"
+                :border-radius="3"
+              />
+            </div>
+          </div>
+        </n-scrollbar>
       </div>
     </n-modal>
 
     <!-- 新建文件夹对话框 -->
-    <n-modal v-model:show="showCreateDirDialog" preset="dialog" title="新建文件夹">
+    <n-modal 
+      v-model:show="showCreateDirDialog" 
+      preset="dialog" 
+      title="新建文件夹"
+      :style="{ width: isMobile ? '90vw' : '400px', maxWidth: '400px' }"
+    >
       <n-form-item label="文件夹名称">
         <n-input
           v-model:value="newFolderName"
           placeholder="请输入文件夹名称"
           @keyup.enter="createDirectory"
+          size="large"
         />
       </n-form-item>
       <template #action>
@@ -310,8 +491,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, h, watch, nextTick } from 'vue'
-import { useMessage, useDialog, NButton, NIcon, NTag, NInput, NTooltip, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
+import { ref, computed, onMounted, onUnmounted, h, watch, nextTick } from 'vue'
+import { useMessage, useDialog, NButton, NIcon, NTag, NInput, NTooltip, NSpace, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
 import { fileService } from '@/api/services/file'
 import type { FileInfo, AuthedDir } from '@/types'
 import {
@@ -319,7 +500,8 @@ import {
   DocumentOutline, TrashOutline, CreateOutline, DownloadOutline, LockClosedOutline,
   EyeOutline, InformationCircleOutline, CopyOutline, CutOutline, ClipboardOutline,
   ChevronBackOutline, ChevronForwardOutline, ArrowUpOutline, SearchOutline,
-  OpenOutline, FolderOpenOutline
+  OpenOutline, FolderOpenOutline,
+  EllipsisVerticalOutline
 } from '@vicons/ionicons5'
 import { format } from 'date-fns'
 
@@ -334,9 +516,15 @@ interface FileTab {
   fileList: FileInfo[]
   filteredFileList?: FileInfo[]
   loading: boolean
+  loadingMore: boolean
   backHistory: string[]
   forwardHistory: string[]
   rootPath: string
+  // 分页相关
+  currentPage: number
+  pageSize: number
+  totalCount: number
+  hasMore: boolean
 }
 
 interface ClipboardData {
@@ -354,6 +542,7 @@ const authedDirs = ref<AuthedDir[]>([])
 const selectedRootPath = ref<string | null>(null)
 const showUploadDialog = ref(false)
 const showCreateDirDialog = ref(false)
+const showMoreActions = ref(false)
 const newFolderName = ref('')
 const creating = ref(false)
 const uploadProgress = ref<Array<{ name: string; percentage: number; status: string; fullPath: string }>>([])
@@ -361,6 +550,32 @@ const clipboardData = ref<ClipboardData>({
   files: [],
   isCut: false,
   sourcePath: ''
+})
+
+// 文件内容区域引用
+const fileContentRef = ref<HTMLElement | null>(null)
+
+// 移动端适配
+const isMobile = ref(window.innerWidth <= 768)
+
+function handleResize() {
+  isMobile.value = window.innerWidth <= 768
+}
+
+// 滚动加载处理
+function handleScroll(e: Event) {
+  const target = e.target as HTMLElement
+  if (!target) return
+  
+  const { scrollTop, scrollHeight, clientHeight } = target
+  // 距离底部 100px 时触发加载
+  if (scrollHeight - scrollTop - clientHeight < 100) {
+    loadMoreFiles()
+  }
+}
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
 })
 
 // 右键菜单状态
@@ -422,46 +637,111 @@ const contextMenuOptions = computed<DropdownOption[]>(() => {
 })
 
 // ============ 表格列配置 ============
-const tableColumns = computed<DataTableColumns<FileInfo>>(() => [
-  {
-    type: 'selection',
-    width: 50,
-  },
-  {
-    title: '名称',
-    key: 'name',
-    render: (row) => {
-      return h('div', { class: 'file-name-cell' }, [
-        h(NIcon, { size: 20 }, { default: () => h(row.type === 'directory' ? FolderOutline : DocumentOutline) }),
-        h('span', { class: 'file-name' }, row.name)
-      ])
-    }
-  },
-  {
-    title: '大小',
-    key: 'size',
-    width: 100,
-    render: (row) => row.type === 'directory' ? '-' : formatBytes(row.size)
-  },
-  {
-    title: '修改日期',
-    key: 'lastModified',
-    width: 180,
-    render: (row) => format(new Date(row.lastModified), 'yyyy-MM-dd HH:mm')
-  },
-  {
-    title: '类型',
-    key: 'type',
-    width: 80,
-    render: (row) => h(NTag, { size: 'small', type: row.type === 'directory' ? 'info' : 'default' }, { default: () => row.type === 'directory' ? '文件夹' : '文件' })
+const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
+  // 文件图标渲染函数
+  const renderFileIcon = (row: FileInfo, size: number) => {
+    const isFolder = row.type === 'directory'
+    return h('div', { 
+      class: ['file-icon-wrapper', isFolder ? 'folder-icon' : 'file-icon']
+    }, [
+      h(NIcon, { 
+        size, 
+        color: isFolder ? '#f0a020' : '#909399'
+      }, { 
+        default: () => h(isFolder ? FolderOutline : DocumentOutline) 
+      })
+    ])
   }
-])
 
-// 行属性（用于双击）
+  // 移动端简化列
+  if (isMobile.value) {
+    return [
+      {
+        type: 'selection',
+        width: 40,
+      },
+      {
+        title: '名称',
+        key: 'name',
+        ellipsis: {
+          tooltip: true
+        },
+        render: (row) => {
+          return h('div', { class: 'file-name-cell' }, [
+            renderFileIcon(row, 20),
+            h('span', { class: 'file-name', title: row.name }, row.name)
+          ])
+        }
+      },
+      {
+        title: '修改日期',
+        key: 'lastModified',
+        width: 100,
+        render: (row) => format(new Date(row.lastModified), 'MM-dd HH:mm')
+      }
+    ]
+  }
+  
+  // 桌面端完整列
+  return [
+    {
+      type: 'selection',
+      width: 50,
+    },
+    {
+      title: '名称',
+      key: 'name',
+      ellipsis: {
+        tooltip: true
+      },
+      render: (row) => {
+        return h('div', { class: 'file-name-cell' }, [
+          renderFileIcon(row, 22),
+          h('span', { class: 'file-name' }, row.name)
+        ])
+      }
+    },
+    {
+      title: '大小',
+      key: 'size',
+      width: 100,
+      render: (row) => row.type === 'directory' ? '-' : formatBytes(row.size)
+    },
+    {
+      title: '修改日期',
+      key: 'lastModified',
+      width: 180,
+      render: (row) => format(new Date(row.lastModified), 'yyyy-MM-dd HH:mm')
+    },
+    {
+      title: '类型',
+      key: 'type',
+      width: 80,
+      render: (row) => h(NTag, { size: 'small', type: row.type === 'directory' ? 'info' : 'default' }, { default: () => row.type === 'directory' ? '文件夹' : '文件' })
+    }
+  ]
+})
+
+// 行属性（用于双击和单击选中）
 const rowProps = (row: FileInfo) => ({
+  style: { cursor: 'pointer' },
+  onClick: () => handleRowClick(row),
   onDblclick: () => handleRowDoubleClick(row),
   onContextmenu: (e: MouseEvent) => showContextMenu(e, row)
 })
+
+// 单击选中/取消选中行
+function handleRowClick(row: FileInfo) {
+  const path = row.path
+  const index = selectedRows.value.indexOf(path)
+  if (index > -1) {
+    // 已选中，取消选中
+    selectedRows.value.splice(index, 1)
+  } else {
+    // 未选中，添加到选中列表
+    selectedRows.value.push(path)
+  }
+}
 
 // ============ 标签页管理 ============
 function generateTabId(): string {
@@ -479,9 +759,15 @@ function addNewTab(path?: string, name?: string) {
     path: tabPath,
     fileList: [],
     loading: false,
+    loadingMore: false,
     backHistory: [],
     forwardHistory: [],
-    rootPath
+    rootPath,
+    // 分页
+    currentPage: 1,
+    pageSize: 50,
+    totalCount: 0,
+    hasMore: true
   }
 
   tabs.value.push(newTab)
@@ -575,6 +861,8 @@ function loadTabPath(path: string) {
   currentTab.value.path = path
   currentTab.value.fileList = []
   currentTab.value.filteredFileList = undefined
+  currentTab.value.currentPage = 1
+  currentTab.value.hasMore = true
   searchKeyword.value = ''
   fetchTabFiles(currentTab.value)
 }
@@ -615,12 +903,30 @@ function navigateToPathByIndex(index: number) {
 }
 
 // ============ 文件操作 ============
-async function fetchTabFiles(tab: FileTab) {
-  tab.loading = true
+async function fetchTabFiles(tab: FileTab, loadMore: boolean = false) {
+  if (loadMore) {
+    if (tab.loadingMore || !tab.hasMore) return
+    tab.loadingMore = true
+    tab.currentPage++
+  } else {
+    tab.loading = true
+    tab.currentPage = 1
+    tab.fileList = []
+  }
+  
   try {
-    const response = await fileService.getFileList(tab.path)
+    const response = await fileService.getFileList(tab.path, tab.currentPage, tab.pageSize)
     // 兼容 list 和 records 两种字段
-    tab.fileList = response.list || response.records || []
+    const newFiles = response.list || response.records || []
+    
+    if (loadMore) {
+      tab.fileList = [...tab.fileList, ...newFiles]
+    } else {
+      tab.fileList = newFiles
+    }
+    
+    tab.totalCount = response.total || 0
+    tab.hasMore = tab.fileList.length < tab.totalCount
     tab.filteredFileList = undefined
     searchKeyword.value = ''
 
@@ -630,9 +936,23 @@ async function fetchTabFiles(tab: FileTab) {
   } catch (error: unknown) {
     const err = error as Error
     message.error(err.message || '获取文件列表失败')
-    tab.fileList = []
+    if (!loadMore) {
+      tab.fileList = []
+    }
+    // 加载失败时回退页码
+    if (loadMore) {
+      tab.currentPage--
+    }
   } finally {
     tab.loading = false
+    tab.loadingMore = false
+  }
+}
+
+// 加载更多文件
+function loadMoreFiles() {
+  if (currentTab.value && currentTab.value.hasMore && !currentTab.value.loadingMore) {
+    fetchTabFiles(currentTab.value, true)
   }
 }
 
@@ -864,6 +1184,14 @@ function getPathParts(path: string): string[] {
   if (!selectedRootPath.value) return path.split('/').filter(Boolean)
   const rootParts = selectedRootPath.value.split('/').filter(Boolean).length
   return path.split('/').filter(Boolean).slice(rootParts)
+}
+
+// 获取简短路径（移动端显示）
+function getShortPath(path: string): string {
+  const parts = path.split(/[\/\\]/).filter(Boolean)
+  if (parts.length === 0) return '/'
+  if (parts.length <= 2) return parts.join('/')
+  return '.../' + parts.slice(-2).join('/')
 }
 
 // ============ 其他操作 ============
@@ -1173,6 +1501,7 @@ async function fetchAuthedDirs() {
 
 onMounted(() => {
   fetchAuthedDirs()
+  window.addEventListener('resize', handleResize)
 })
 </script>
 
@@ -1186,7 +1515,12 @@ onMounted(() => {
 
 .tabs-bar {
   display: flex;
+  align-items: center;
   gap: 8px;
+  background: var(--bg-color);
+  padding: 8px 12px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .tab-content {
@@ -1203,7 +1537,13 @@ onMounted(() => {
 }
 
 .toolbar-card {
-  padding: 8px 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.toolbar-card :deep(.n-card__content) {
+  padding: 0;
 }
 
 .path-nav {
@@ -1211,6 +1551,7 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   flex: 1;
+  min-width: 0;
 }
 
 .path-separator {
@@ -1218,72 +1559,335 @@ onMounted(() => {
   margin: 0 4px;
 }
 
+/* 移动端路径栏 */
+.mobile-path-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-path-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
 .clipboard-status {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px dashed var(--n-border-color);
 }
 
 .file-content-card {
   flex: 1;
   overflow: auto;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .permission-info {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--n-border-color);
-  border-radius: 6px;
-  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.08) 0%, rgba(54, 173, 106, 0.04) 100%);
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(24, 160, 88, 0.1);
 }
 
 .permission-tags {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .file-name-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.file-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.file-icon-wrapper.folder-icon :deep(.n-icon) {
+  color: #f0a020;
+}
+
+.file-icon-wrapper.file-icon :deep(.n-icon) {
+  color: #909399;
 }
 
 .file-name {
   cursor: pointer;
+  transition: color 0.2s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
 }
 
 .file-name:hover {
   color: var(--n-primary-color);
 }
 
-.upload-progress {
-  margin-top: 16px;
+/* 上传对话框样式 */
+.upload-mode-selector {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.upload-mode-option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.upload-mode-selector :deep(.n-space) {
+  gap: 24px !important;
+}
+
+.upload-dragger {
+  padding: 40px 20px;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 2px dashed var(--n-border-color);
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.02) 0%, rgba(54, 173, 106, 0.01) 100%);
+}
+
+.upload-dragger:hover {
+  border-color: var(--primary-color);
+  background: linear-gradient(135deg, rgba(24, 160, 88, 0.05) 0%, rgba(54, 173, 106, 0.02) 100%);
+}
+
+.upload-icon {
+  margin-bottom: 16px;
+  animation: bounce 2s ease infinite;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-4px); }
+}
+
+.upload-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color-base);
+  margin-bottom: 8px;
+}
+
+.upload-hint {
+  font-size: 13px;
+  color: var(--text-color-tertiary);
+}
+
+/* 上传进度样式 */
+.upload-progress-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color-light);
+}
+
+.upload-progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.progress-title {
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--text-color-base);
+}
+
+.upload-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .progress-item {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.progress-item span {
-  min-width: 100px;
-  white-space: nowrap;
+.progress-file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-icon {
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.file-name {
+  font-size: 13px;
+  color: var(--text-color-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-:deep(.clickable-row) {
+/* 表格行样式 */
+:deep(.n-data-table-tr) {
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
 
-:deep(.clickable-row:hover) {
-  background-color: var(--n-rowHoverColor);
+:deep(.n-data-table-tr:hover) {
+  background-color: var(--n-td-color-hover) !important;
+}
+
+:deep(.n-data-table-tr--selected) {
+  background-color: var(--n-td-color-hover) !important;
+}
+
+/* 加载更多提示 */
+.load-more-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  color: var(--text-color-tertiary);
+  font-size: 13px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+  .files-view {
+    gap: 8px;
+  }
+
+  .tabs-bar {
+    padding: 6px 8px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tabs-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toolbar-card {
+    padding: 8px;
+  }
+
+  .toolbar-card :deep(.n-space) {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+
+  .toolbar-card :deep(.n-divider--vertical) {
+    display: none;
+  }
+
+  .path-nav {
+    display: none;
+  }
+
+  .mobile-path-bar {
+    display: flex;
+  }
+
+  .permission-info {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .upload-dragger {
+    padding: 30px 16px;
+  }
+
+  .upload-icon :deep(.n-icon) {
+    font-size: 48px !important;
+  }
+
+  .upload-text {
+    font-size: 14px;
+  }
+
+  .upload-hint {
+    font-size: 12px;
+  }
+
+  /* 移动端文件列表表格样式 */
+  .file-content-card :deep(.n-data-table) {
+    font-size: 13px;
+  }
+
+  .file-content-card :deep(.n-data-table-wrapper) {
+    overflow-x: hidden;
+  }
+
+  .file-content-card :deep(.n-data-table th),
+  .file-content-card :deep(.n-data-table td) {
+    padding: 10px 8px;
+  }
+
+  /* 文件名单元格样式 */
+  .file-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .file-name-cell .file-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .hide-on-mobile {
+    display: none !important;
+  }
+}
+
+/* 小屏幕手机 */
+@media screen and (max-width: 480px) {
+  .upload-mode-selector :deep(.n-radio-group) {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .upload-mode-selector :deep(.n-radio-button) {
+    justify-content: center;
+  }
 }
 </style>
