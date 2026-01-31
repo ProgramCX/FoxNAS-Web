@@ -1,6 +1,6 @@
 /**
  * 应用入口文件
- * 初始化Vue应用、Pinia状态管理和路由
+ * 初始化Vue应用、Pinia状态管理、路由和国际化
  */
 
 import { createApp } from 'vue'
@@ -9,6 +9,7 @@ import naive from 'naive-ui'
 import * as echarts from 'echarts'
 import App from './App.vue'
 import router from './router'
+import i18n from './i18n'
 import { useSettingsStore } from './stores/settings'
 
 // 导入全局样式
@@ -33,6 +34,9 @@ async function bootstrap() {
 
   // 使用 Naive UI
   app.use(naive)
+
+  // 使用国际化
+  app.use(i18n)
 
   // 挂载应用
   app.mount('#app')

@@ -2,17 +2,17 @@
   <div class="ddns-view">
     <n-tabs type="card" animated>
       <!-- DDNS任务管理 -->
-      <n-tab-pane name="tasks" tab="DDNS任务">
+      <n-tab-pane name="tasks" :tab="t('ddns.tasks')">
         <n-card>
 
             <n-space>
               <n-button type="primary" @click="showAddTaskDialog = true">
                 <template #icon><n-icon><AddOutline /></n-icon></template>
-                新增DDNS任务记录
+                {{ t('ddns.addTask') }}
               </n-button>
               <n-button type="error" @click="batchDeleteTasks" :disabled="selectedTaskRows.length === 0">
                 <template #icon><n-icon><TrashOutline /></n-icon></template>
-                批量删除 ({{ selectedTaskRows.length }})
+                {{ t('common.batchDelete') }} ({{ selectedTaskRows.length }})
               </n-button>
             </n-space>
             <div style="height: 16px;"></div>
@@ -35,24 +35,24 @@
               :on-update:page="fetchTasks"
               :page-slot="5"
             >
-              <template #prefix>共 {{ taskTotalCount }} 条</template>
+              <template #prefix>{{ t('common.total', { count: taskTotalCount }) }}</template>
             </n-pagination>
           </div>
         </n-card>
       </n-tab-pane>
 
       <!-- 访问密钥管理 -->
-      <n-tab-pane name="secrets" tab="访问密钥">
+      <n-tab-pane name="secrets" :tab="t('ddns.accessKey')">
         <n-card>
           
             <n-space>
               <n-button type="primary" @click="showAddSecretDialog = true">
                 <template #icon><n-icon><AddOutline /></n-icon></template>
-                新增DDNS密钥记录
+                {{ t('ddns.addSecret') }}
               </n-button>
               <n-button type="error" @click="batchDeleteSecrets" :disabled="selectedSecretRows.length === 0">
                 <template #icon><n-icon><TrashOutline /></n-icon></template>
-                批量删除 ({{ selectedSecretRows.length }})
+                {{ t('common.batchDelete') }} ({{ selectedSecretRows.length }})
               </n-button>
             </n-space>
           
@@ -76,7 +76,7 @@
               :on-update:page="fetchSecrets"
               :page-slot="5"
             >
-              <template #prefix>共 {{ secretTotalCount }} 条</template>
+              <template #prefix>{{ t('common.total', { count: secretTotalCount }) }}</template>
             </n-pagination>
           </div>
         </n-card>
@@ -84,41 +84,41 @@
     </n-tabs>
 
     <!-- 新增DDNS任务对话框 -->
-    <n-modal v-model:show="showAddTaskDialog" preset="dialog" title="新增DDNS任务记录" style="width: 700px">
+    <n-modal v-model:show="showAddTaskDialog" preset="dialog" :title="t('ddns.addTask')" style="width: 700px">
       <n-form :model="newTaskForm" label-placement="left" label-width="140px">
-        <n-form-item label="任务名称">
-          <n-input v-model:value="newTaskForm.taskName" placeholder="请输入任务名称" />
+        <n-form-item :label="t('ddns.taskName')">
+          <n-input v-model:value="newTaskForm.taskName" :placeholder="t('ddns.placeholder.taskName')" />
         </n-form-item>
-        <n-form-item label="任务描述">
-          <n-input v-model:value="newTaskForm.taskDescription" placeholder="请输入任务描述" />
+        <n-form-item :label="t('ddns.taskDescription')">
+          <n-input v-model:value="newTaskForm.taskDescription" :placeholder="t('ddns.placeholder.taskDescription')" />
         </n-form-item>
-        <n-form-item label="IP地址">
-          <n-input v-model:value="newTaskForm.taskIp" placeholder="请输入IP地址" />
+        <n-form-item :label="t('ddns.ipAddress')">
+          <n-input v-model:value="newTaskForm.taskIp" :placeholder="t('ddns.placeholder.ipAddress')" />
         </n-form-item>
-        <n-form-item label="域名RR记录">
-          <n-input v-model:value="newTaskForm.domainRr" placeholder="如: www (为空则使用@)" />
+        <n-form-item :label="t('ddns.domainRr')">
+          <n-input v-model:value="newTaskForm.domainRr" :placeholder="t('ddns.placeholder.domainRr')" />
         </n-form-item>
-        <n-form-item label="主域名" required>
-          <n-input v-model:value="newTaskForm.mainDomain" placeholder="如: example.com" />
+        <n-form-item :label="t('ddns.mainDomain')" required>
+          <n-input v-model:value="newTaskForm.mainDomain" :placeholder="t('ddns.placeholder.mainDomain')" />
         </n-form-item>
-        <n-form-item label="关联的访问密钥" required>
+        <n-form-item :label="t('ddns.relatedAccessKey')" required>
           <n-select 
             v-model:value="newTaskForm.dnsSecretId" 
             :options="keyOptions" 
-            placeholder="请选择访问密钥"
+            :placeholder="t('ddns.placeholder.selectAccessKey')"
             filterable
           />
         </n-form-item>
-        <n-form-item label="同步间隔(秒)">
+        <n-form-item :label="t('ddns.syncInterval')">
           <n-input-number v-model:value="newTaskForm.syncInterval" :min="60" :max="86400" style="width: 200px" />
         </n-form-item>
-        <n-form-item label="是否启用">
+        <n-form-item :label="t('ddns.isEnabled')">
           <n-switch v-model:value="newTaskForm.statusEnabled" />
         </n-form-item>
-        <n-form-item label="公网IP">
+        <n-form-item :label="t('ddns.publicIp')">
           <n-switch v-model:value="newTaskForm.isPublicIp" />
         </n-form-item>
-        <n-form-item label="IP类型">
+        <n-form-item :label="t('ddns.ipType')">
           <n-radio-group v-model:value="newTaskForm.ipType">
             <n-radio value="ipv4">IPv4</n-radio>
             <n-radio value="ipv6">IPv6</n-radio>
@@ -126,37 +126,37 @@
         </n-form-item>
       </n-form>
       <template #action>
-        <n-button @click="showAddTaskDialog = false">取消</n-button>
-        <n-button type="primary" @click="submitAddTask" :loading="saving">确定</n-button>
+        <n-button @click="showAddTaskDialog = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="submitAddTask" :loading="saving">{{ t('common.confirm') }}</n-button>
       </template>
     </n-modal>
 
     <!-- 新增DDNS密钥对话框 -->
-    <n-modal v-model:show="showAddSecretDialog" preset="dialog" title="新增DDNS密钥记录" style="width: 600px">
+    <n-modal v-model:show="showAddSecretDialog" preset="dialog" :title="t('ddns.addSecret')" style="width: 600px">
       <n-form :model="newSecretForm" label-placement="left" label-width="120px">
         <n-form-item label="Access Key" required>
-          <n-input v-model:value="newSecretForm.accessKey" placeholder="请输入Access Key" />
+          <n-input v-model:value="newSecretForm.accessKey" :placeholder="t('ddns.placeholder.accessKey')" />
         </n-form-item>
         <n-form-item label="Secret Key" required>
-          <n-input v-model:value="newSecretForm.accessSecret" type="password" placeholder="请输入Secret Key" show-password-on="click" />
+          <n-input v-model:value="newSecretForm.accessSecret" type="password" :placeholder="t('ddns.placeholder.secretKey')" show-password-on="click" />
         </n-form-item>
-        <n-form-item label="名称" required>
-          <n-input v-model:value="newSecretForm.accessName" placeholder="请输入名称" />
+        <n-form-item :label="t('ddns.secretName')" required>
+          <n-input v-model:value="newSecretForm.accessName" :placeholder="t('ddns.placeholder.name')" />
         </n-form-item>
-        <n-form-item label="描述">
-          <n-input v-model:value="newSecretForm.accessDescription" placeholder="请输入描述" />
+        <n-form-item :label="t('ddns.secretDescription')">
+          <n-input v-model:value="newSecretForm.accessDescription" :placeholder="t('ddns.placeholder.description')" />
         </n-form-item>
-        <n-form-item label="DNS服务商" required>
+        <n-form-item :label="t('ddns.dnsProvider')" required>
           <n-select 
             v-model:value="newSecretForm.dnsCode" 
             :options="dnsProviderOptions" 
-            placeholder="请选择DNS服务商"
+            :placeholder="t('ddns.placeholder.selectDnsProvider')"
           />
         </n-form-item>
       </n-form>
       <template #action>
-        <n-button @click="showAddSecretDialog = false">取消</n-button>
-        <n-button type="primary" @click="submitAddSecret" :loading="secretSaving">确定</n-button>
+        <n-button @click="showAddSecretDialog = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="submitAddSecret" :loading="secretSaving">{{ t('common.confirm') }}</n-button>
       </template>
     </n-modal>
   </div>
@@ -164,11 +164,13 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useMessage, NButton, NIcon, NCheckbox, type DataTableColumns, NInputNumber, NSelect, NModal, NForm, NFormItem, NInput, NSwitch, NRadioGroup, NRadio } from 'naive-ui'
 import { ddnsTaskService, ddnsConfigService } from '@/api/services/ddns'
 import type { DDNSTask, DnsProvider, AccessSecret } from '@/types'
 import { AddOutline, SaveOutline, TrashOutline, PlayOutline, PauseOutline, RefreshOutline } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const message = useMessage()
 
 // ==================== 任务相关 ====================
@@ -212,54 +214,54 @@ const keyOptions = computed(() =>
 )
 
 // 状态配置
-const statusConfig: Record<string, { type: string; text: string; color: string }> = {
-  running: { type: 'success', text: '• 运行中', color: '#4caf50' },
-  paused: { type: 'warning', text: '‖ 已暂停', color: '#ffc107' },
-  completed: { type: 'info', text: '✓ 已完成', color: '#2196f3' },
-  blocked: { type: 'default', text: '… 阻塞中', color: '#9e9e9e' },
-  error: { type: 'error', text: '✕ 错误', color: '#f44336' },
-}
+const statusConfig = computed(() => ({
+  running: { type: 'success', text: '• ' + t('ddns.running'), color: '#4caf50' },
+  paused: { type: 'warning', text: '‖ ' + t('ddns.paused'), color: '#ffc107' },
+  completed: { type: 'info', text: '✓ ' + t('ddns.completed'), color: '#2196f3' },
+  blocked: { type: 'default', text: '… ' + t('ddns.blocked'), color: '#9e9e9e' },
+  error: { type: 'error', text: '✕ ' + t('ddns.error'), color: '#f44336' },
+}) as Record<string, { type: string; text: string; color: string }>)
 
 // 任务表格列定义
-const taskColumns: DataTableColumns<DDNSTask> = [
+const taskColumns = computed<DataTableColumns<DDNSTask>>(() => [
   {
     type: 'selection',
     width: 50,
   },
   { 
-    title: '任务ID', 
+    title: t('ddns.taskId'), 
     key: 'id', 
     width: 80,
   },
   { 
-    title: '任务名称', 
+    title: t('ddns.taskName'), 
     key: 'taskName', 
     width: 120,
   },
   { 
-    title: '任务描述', 
+    title: t('ddns.taskDescription'), 
     key: 'taskDescription', 
     width: 150,
     ellipsis: { tooltip: true },
   },
   { 
-    title: 'IP地址', 
+    title: t('ddns.ipAddress'), 
     key: 'taskIp', 
     width: 120,
   },
   { 
-    title: '域名RR记录', 
+    title: t('ddns.domainRr'), 
     key: 'domainRr', 
     width: 100,
   },
   { 
-    title: '主域名', 
+    title: t('ddns.mainDomain'), 
     key: 'mainDomain', 
     width: 150,
     ellipsis: { tooltip: true },
   },
   { 
-    title: '关联的访问密钥', 
+    title: t('ddns.relatedAccessKey'), 
     key: 'dnsSecretId', 
     width: 120,
     render: (row) => {
@@ -268,12 +270,12 @@ const taskColumns: DataTableColumns<DDNSTask> = [
     }
   },
   { 
-    title: '同步间隔(秒)', 
+    title: t('ddns.syncInterval'), 
     key: 'syncInterval', 
     width: 100,
   },
   { 
-    title: '是否启用', 
+    title: t('ddns.isEnabled'), 
     key: 'status', 
     width: 90,
     render: (row) => h(NCheckbox, {
@@ -282,7 +284,7 @@ const taskColumns: DataTableColumns<DDNSTask> = [
     })
   },
   { 
-    title: '公网IP', 
+    title: t('ddns.publicIp'), 
     key: 'isPublicIp', 
     width: 70,
     render: (row) => h(NCheckbox, {
@@ -291,22 +293,22 @@ const taskColumns: DataTableColumns<DDNSTask> = [
     })
   },
   { 
-    title: 'IP类型', 
+    title: t('ddns.ipType'), 
     key: 'ipType', 
     width: 80,
     render: (row) => (row.ipType || 'ipv4').toUpperCase()
   },
   { 
-    title: '实时状态', 
+    title: t('ddns.realStatus'), 
     key: 'realStatus', 
     width: 100,
     render: (row) => {
-      const config = statusConfig[row.realStatus || ''] || { type: 'default', text: '未获取状态', color: '#616161' }
+      const config = statusConfig.value[row.realStatus || ''] || { type: 'default', text: t('ddns.notFetched'), color: '#616161' }
       return h('span', { style: `color: ${config.color}; font-weight: bold;` }, config.text)
     }
   },
   {
-    title: '操作',
+    title: t('common.actions'),
     key: 'actions',
     width: 200,
     render: (row) => h('div', { class: 'action-buttons' }, [
@@ -333,7 +335,7 @@ const taskColumns: DataTableColumns<DDNSTask> = [
         onClick: () => openEditTaskDialog(row),
       }, { 
         icon: () => h(NIcon, null, { default: () => h(SaveOutline) }),
-        default: () => '编辑'
+        default: () => t('common.edit')
       }),
       // 删除按钮
       h(NButton, {
@@ -346,7 +348,7 @@ const taskColumns: DataTableColumns<DDNSTask> = [
       }),
     ]),
   },
-]
+])
 
 // 分页配置
 const taskPagination = computed(() => ({
@@ -368,18 +370,18 @@ async function batchDeleteTasks() {
   const idsToDelete = selectedTaskRows.value as number[]
   
   if (idsToDelete.length === 0) {
-    message.warning('请选择要删除的任务')
+    message.warning(t('ddns.message.selectTaskToDelete'))
     return
   }
   
   try {
     await Promise.all(idsToDelete.map(id => ddnsTaskService.deleteTask(id)))
-    message.success(`成功删除 ${idsToDelete.length} 个任务`)
+    message.success(t('ddns.message.batchDeleteTaskSuccess', { count: idsToDelete.length }))
     selectedTaskRows.value = []
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '批量删除失败')
+    message.error(err.message || t('ddns.message.batchDeleteFailed'))
   }
 }
 
@@ -397,7 +399,7 @@ async function fetchTasks(page: number = 1) {
     selectedTaskRows.value = []
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取任务列表失败')
+    message.error(err.message || t('ddns.message.fetchTasksFailed'))
   } finally {
     loading.value = false
   }
@@ -427,11 +429,11 @@ const editingTaskId = ref<number | null>(null)
 // 提交新增/编辑任务
 async function submitAddTask() {
   if (!newTaskForm.value.mainDomain) {
-    message.error('请填写主域名')
+    message.error(t('ddns.message.enterMainDomain'))
     return
   }
   if (!newTaskForm.value.dnsSecretId) {
-    message.error('请选择访问密钥')
+    message.error(t('ddns.message.selectAccessKey'))
     return
   }
   
@@ -454,11 +456,11 @@ async function submitAddTask() {
     if (editingTaskId.value) {
       // 更新
       await ddnsTaskService.updateTask(taskData as DDNSTask)
-      message.success('更新DDNS记录成功')
+      message.success(t('ddns.message.updateTaskSuccess'))
     } else {
       // 新增
       await ddnsTaskService.createTask(taskData as DDNSTask)
-      message.success('添加DDNS记录成功')
+      message.success(t('ddns.message.addTaskSuccess'))
     }
     
     showAddTaskDialog.value = false
@@ -467,7 +469,7 @@ async function submitAddTask() {
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '操作失败')
+    message.error(err.message || t('ddns.message.operationFailed'))
   } finally {
     saving.value = false
   }
@@ -493,11 +495,11 @@ function resetTaskForm() {
 async function pauseTask(id: number) {
   try {
     await ddnsTaskService.pauseTask(id)
-    message.success('暂停成功')
+    message.success(t('ddns.message.pauseSuccess'))
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '暂停任务失败')
+    message.error(err.message || t('ddns.message.pauseFailed'))
   }
 }
 
@@ -505,11 +507,11 @@ async function pauseTask(id: number) {
 async function resumeTask(id: number) {
   try {
     await ddnsTaskService.resumeTask(id)
-    message.success('恢复成功')
+    message.success(t('ddns.message.resumeSuccess'))
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '恢复任务失败')
+    message.error(err.message || t('ddns.message.resumeFailed'))
   }
 }
 
@@ -517,11 +519,11 @@ async function resumeTask(id: number) {
 async function restartTask(id: number) {
   try {
     await ddnsTaskService.restartTask(id)
-    message.success('重启成功')
+    message.success(t('ddns.message.restartSuccess'))
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '重启任务失败')
+    message.error(err.message || t('ddns.message.restartFailed'))
   }
 }
 
@@ -529,11 +531,11 @@ async function restartTask(id: number) {
 async function deleteTask(id: number) {
   try {
     await ddnsTaskService.deleteTask(id)
-    message.success('删除成功')
+    message.success(t('ddns.message.deleteSuccess'))
     await fetchTasks(taskPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '删除任务失败')
+    message.error(err.message || t('ddns.message.deleteTaskFailed'))
   }
 }
 
@@ -568,13 +570,13 @@ const dnsProviderOptions = computed(() =>
 )
 
 // 密钥表格列定义
-const secretColumns: DataTableColumns<AccessSecret> = [
+const secretColumns = computed<DataTableColumns<AccessSecret>>(() => [
   {
     type: 'selection',
     width: 50,
   },
   { 
-    title: '密钥ID', 
+    title: t('ddns.secretId'), 
     key: 'id', 
     width: 80,
   },
@@ -591,27 +593,27 @@ const secretColumns: DataTableColumns<AccessSecret> = [
     ellipsis: { tooltip: true },
   },
   { 
-    title: '名称', 
+    title: t('ddns.secretName'), 
     key: 'accessName', 
     width: 150,
   },
   { 
-    title: '描述', 
+    title: t('ddns.secretDescription'), 
     key: 'accessDescription', 
     width: 200,
     ellipsis: { tooltip: true },
   },
   { 
-    title: 'DNS服务商', 
+    title: t('ddns.dnsProvider'), 
     key: 'dnsCode', 
     width: 120,
     render: (row) => {
       const provider = dnsProviders.value.find(p => p.code === row.dnsCode)
-      return provider?.name || `服务商${row.dnsCode}` || '-'
+      return provider?.name || t('ddns.provider', { code: row.dnsCode }) || '-'
     }
   },
   {
-    title: '操作',
+    title: t('common.actions'),
     key: 'actions',
     width: 150,
     render: (row) => h('div', { class: 'action-buttons' }, [
@@ -622,7 +624,7 @@ const secretColumns: DataTableColumns<AccessSecret> = [
         onClick: () => openEditSecretDialog(row),
       }, { 
         icon: () => h(NIcon, null, { default: () => h(SaveOutline) }),
-        default: () => '编辑'
+        default: () => t('common.edit')
       }),
       // 删除按钮
       h(NButton, {
@@ -635,7 +637,7 @@ const secretColumns: DataTableColumns<AccessSecret> = [
       }),
     ]),
   },
-]
+])
 
 // 分页配置
 const secretPagination = computed(() => ({
@@ -657,18 +659,18 @@ async function batchDeleteSecrets() {
   const idsToDelete = selectedSecretRows.value as number[]
   
   if (idsToDelete.length === 0) {
-    message.warning('请选择要删除的密钥')
+    message.warning(t('ddns.message.selectSecretToDelete'))
     return
   }
   
   try {
     await Promise.all(idsToDelete.map(id => ddnsConfigService.deleteAccessKey(String(id))))
-    message.success(`成功删除 ${idsToDelete.length} 个密钥`)
+    message.success(t('ddns.message.batchDeleteSecretSuccess', { count: idsToDelete.length }))
     selectedSecretRows.value = []
     await fetchSecrets(secretPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '批量删除失败')
+    message.error(err.message || t('ddns.message.batchDeleteFailed'))
   }
 }
 
@@ -686,7 +688,7 @@ async function fetchSecrets(page: number = 1) {
     selectedSecretRows.value = []
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取访问密钥失败')
+    message.error(err.message || t('ddns.message.fetchSecretsFailed'))
   } finally {
     secretLoading.value = false
   }
@@ -720,19 +722,19 @@ function openEditSecretDialog(secret: AccessSecret) {
 // 提交新增/编辑密钥
 async function submitAddSecret() {
   if (!newSecretForm.value.accessKey) {
-    message.error('请填写Access Key')
+    message.error(t('ddns.message.enterAccessKey'))
     return
   }
   if (!newSecretForm.value.accessSecret) {
-    message.error('请填写Secret Key')
+    message.error(t('ddns.message.enterSecretKey'))
     return
   }
   if (!newSecretForm.value.accessName) {
-    message.error('请填写名称')
+    message.error(t('ddns.message.enterName'))
     return
   }
   if (!newSecretForm.value.dnsCode) {
-    message.error('请选择DNS服务商')
+    message.error(t('ddns.message.selectDnsProvider'))
     return
   }
   
@@ -744,13 +746,13 @@ async function submitAddSecret() {
         id: editingSecretId.value,
         ...newSecretForm.value,
       } as AccessSecret)
-      message.success('更新访问密钥成功')
+      message.success(t('ddns.message.updateSecretSuccess'))
     } else {
       // 新增
       await ddnsConfigService.addAccessKey({
         ...newSecretForm.value,
       } as AccessSecret)
-      message.success('添加访问密钥成功')
+      message.success(t('ddns.message.addSecretSuccess'))
     }
     
     showAddSecretDialog.value = false
@@ -759,7 +761,7 @@ async function submitAddSecret() {
     await fetchSecrets(secretPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '操作失败')
+    message.error(err.message || t('ddns.message.operationFailed'))
   } finally {
     secretSaving.value = false
   }
@@ -780,11 +782,11 @@ function resetSecretForm() {
 async function deleteSecret(id: number) {
   try {
     await ddnsConfigService.deleteAccessKey(String(id))
-    message.success('删除成功')
+    message.success(t('ddns.message.deleteSuccess'))
     await fetchSecrets(secretPage.value)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '删除失败')
+    message.error(err.message || t('ddns.message.deleteSecretFailed'))
   }
 }
 

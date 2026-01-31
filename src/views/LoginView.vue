@@ -3,19 +3,22 @@
     <div class="login-card">
       <!-- Logo区域 -->
       <div class="login-header">
+        <div class="language-switch-container">
+          <LanguageSwitcher />
+        </div>
         <n-icon size="48" color="#18a058">
           <CloudOutline />
         </n-icon>
-        <h1 class="title">FoxNAS</h1>
-        <p class="subtitle">NAS 文件管理系统</p>
+        <h1 class="title">{{ t('app.name') }}</h1>
+        <p class="subtitle">{{ t('app.subtitle') }}</p>
       </div>
 
       <!-- 登录表单 -->
       <n-form ref="formRef" :model="formData" :rules="rules" @submit.prevent="handleLogin">
-        <n-form-item path="username" label="用户名">
+        <n-form-item path="username" :label="t('login.username')">
           <n-input
             v-model:value="formData.username"
-            placeholder="请输入用户名"
+            :placeholder="t('login.usernamePlaceholder')"
             size="large"
             :input-props="{ autocomplete: 'username' }"
           >
@@ -25,11 +28,11 @@
           </n-input>
         </n-form-item>
 
-        <n-form-item path="password" label="密码">
+        <n-form-item path="password" :label="t('login.password')">
           <n-input
             v-model:value="formData.password"
             type="password"
-            placeholder="请输入密码"
+            :placeholder="t('login.passwordPlaceholder')"
             size="large"
             show-password-on="click"
             :input-props="{ autocomplete: 'current-password' }"
@@ -41,11 +44,11 @@
         </n-form-item>
 
         <!-- 验证码（仅在注册或忘记密码时显示） -->
-        <n-form-item v-if="isRegisterMode" path="code" label="验证码">
+        <n-form-item v-if="isRegisterMode" path="code" :label="t('login.verifyCode')">
           <n-input-group>
             <n-input
               v-model:value="formData.code"
-              placeholder="请输入验证码"
+              :placeholder="t('login.verifyCodePlaceholder')"
               size="large"
             >
               <template #prefix>
@@ -58,16 +61,16 @@
               @click="sendVerificationCode"
               :loading="sendingCode"
             >
-              {{ countdown > 0 ? `${countdown}s` : '获取验证码' }}
+              {{ countdown > 0 ? `${countdown}s` : t('login.getVerifyCode') }}
             </n-button>
           </n-input-group>
         </n-form-item>
 
         <!-- 邮箱输入（仅注册时显示） -->
-        <n-form-item v-if="isRegisterMode" path="email" label="邮箱">
+        <n-form-item v-if="isRegisterMode" path="email" :label="t('login.email')">
           <n-input
             v-model:value="formData.email"
-            placeholder="请输入邮箱地址"
+            :placeholder="t('login.emailPlaceholder')"
             size="large"
           >
             <template #prefix>
@@ -76,11 +79,11 @@
           </n-input>
         </n-form-item>
 
-        <n-form-item v-if="isRegisterMode" path="confirmPassword" label="确认密码">
+        <n-form-item v-if="isRegisterMode" path="confirmPassword" :label="t('login.confirmPassword')">
           <n-input
             v-model:value="formData.confirmPassword"
             type="password"
-            placeholder="请再次输入密码"
+            :placeholder="t('login.confirmPasswordPlaceholder')"
             size="large"
             show-password-on="click"
           >
@@ -105,14 +108,14 @@
             :disabled="loading"
             @click="handleLogin"
           >
-            {{ isRegisterMode ? '注册' : '登录' }}
+            {{ isRegisterMode ? t('login.registerButton') : t('login.loginButton') }}
           </n-button>
         </n-form-item>
 
         <!-- 切换登录/注册 -->
         <div class="toggle-mode">
           <n-button quaternary size="small" @click="toggleMode">
-            {{ isRegisterMode ? '已有账号？去登录' : '没有账号？去注册' }}
+            {{ isRegisterMode ? t('login.hasAccount') : t('login.noAccount') }}
           </n-button>
         </div>
       </n-form>
@@ -120,9 +123,9 @@
       <!-- 初始化管理员提示 -->
       <div v-if="showInitAdmin" class="init-admin-section">
         <n-divider />
-        <p class="init-tip">系统尚未初始化管理员账户</p>
+        <p class="init-tip">{{ t('login.initAdminTip') }}</p>
         <n-button type="info" block @click="initAdmin" :loading="initingAdmin">
-          初始化管理员账户
+          {{ t('login.initAdmin') }}
         </n-button>
       </div>
     </div>
@@ -137,10 +140,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onUnmounted } from 'vue'
+import { ref, reactive, onUnmounted, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
+import { http } from '@/api/client'
+import { apiEndpoints } from '@/api/config'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import {
   CloudOutline,
   PersonOutline,
@@ -149,6 +156,7 @@ import {
   MailOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const message = useMessage()
@@ -164,32 +172,32 @@ const formData = reactive({
 })
 
 // 表单验证规则
-const rules = {
+const rules = computed(() => ({
   username: [
-    { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 32, message: '用户名长度必须在3-32个字符之间', trigger: 'blur' },
+    { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
+    { min: 3, max: 32, message: t('validation.usernameLength'), trigger: 'blur' },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少6个字符', trigger: 'blur' },
+    { required: true, message: t('login.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: t('validation.passwordMinLength'), trigger: 'blur' },
   ],
   confirmPassword: [
-    { required: true, message: '请确认密码', trigger: 'blur' },
+    { required: true, message: t('validation.confirmPasswordRequired'), trigger: 'blur' },
     {
-      validator: (rule: unknown, value: string) => value === formData.password,
-      message: '两次输入的密码不一致',
+      validator: (_rule: unknown, value: string) => value === formData.password,
+      message: t('login.passwordMismatch'),
       trigger: 'blur',
     },
   ],
   email: [
-    { required: true, message: '请输入邮箱地址', trigger: 'blur' },
-    { type: 'email', message: '请输入有效的邮箱地址', trigger: 'blur' },
+    { required: true, message: t('validation.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('validation.email'), trigger: 'blur' },
   ],
   code: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { len: 6, message: '验证码长度应为6位', trigger: 'blur' },
+    { required: true, message: t('validation.verifyCodeRequired'), trigger: 'blur' },
+    { len: 6, message: t('validation.verifyCodeLength'), trigger: 'blur' },
   ],
-}
+}))
 
 // 状态
 const loading = ref(false)
@@ -215,14 +223,14 @@ function toggleMode() {
 // 发送验证码
 async function sendVerificationCode() {
   if (!formData.email) {
-    message.error('请先输入邮箱地址')
+    message.error(t('validation.emailRequired'))
     return
   }
 
   sendingCode.value = true
   try {
     await authStore.sendVerifyCode(formData.email)
-    message.success('验证码已发送，请查收邮箱')
+    message.success(t('login.verifyCodeSent'))
     countdown.value = 60
     countdownTimer = window.setInterval(() => {
       countdown.value--
@@ -232,7 +240,7 @@ async function sendVerificationCode() {
     }, 1000)
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '发送验证码失败')
+    message.error(err.message || t('login.sendVerifyCodeFailed'))
   } finally {
     sendingCode.value = false
   }
@@ -247,7 +255,7 @@ async function initAdmin() {
     showInitAdmin.value = false
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '初始化失败')
+    message.error(err.message || t('login.initFailed'))
   } finally {
     initingAdmin.value = false
   }
@@ -269,13 +277,13 @@ async function handleLogin() {
     if (isRegisterMode.value) {
       // 注册
       await authStore.register(formData.username, formData.password, formData.code)
-      message.success('注册成功，请登录')
+      message.success(t('login.registerSuccess'))
       isRegisterMode.value = false
       formData.password = ''
     } else {
       // 登录
       await authStore.login(formData.username, formData.password)
-      message.success('登录成功')
+      message.success(t('login.loginSuccess'))
 
       // 跳转到重定向页面或首页
       const redirect = route.query.redirect as string
@@ -283,7 +291,7 @@ async function handleLogin() {
     }
   } catch (error: unknown) {
     const err = error as Error
-    errorMessage.value = err.message || '操作失败，请稍后重试'
+    errorMessage.value = err.message || t('common.operationFailed')
 
     // 检查是否需要初始化管理员
     if (err.message?.includes('admin') || err.message?.includes('Admin')) {
@@ -297,6 +305,18 @@ async function handleLogin() {
 // 组件卸载时清理定时器
 onUnmounted(() => {
   if (countdownTimer) clearInterval(countdownTimer)
+})
+
+// 组件挂载时检查是否需要初始化管理员
+onMounted(async () => {
+  try {
+    const result = await http.get<{ required: boolean }>(apiEndpoints.auth.initRequired)
+    if (result.required) {
+      showInitAdmin.value = true
+    }
+  } catch {
+    // 忽略错误，让用户正常登录
+  }
 })
 </script>
 
@@ -326,6 +346,13 @@ onUnmounted(() => {
 .login-header {
   text-align: center;
   margin-bottom: 32px;
+  position: relative;
+}
+
+.language-switch-container {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .title {

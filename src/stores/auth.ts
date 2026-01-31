@@ -23,6 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Getters
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => userInfo.value?.userName || '')
+  const userUuid = computed(() => userInfo.value?.id || '')
 
   // Actions
 
@@ -32,11 +33,15 @@ export const useAuthStore = defineStore('auth', () => {
    * @param password 密码
    */
   async function login(username: string, password: string): Promise<void> {
-    const response = await http.post<string>(apiEndpoints.auth.login, { username, password })
+    const response = await http.post<{ accessToken: string; refreshToken: string }>(apiEndpoints.auth.login, { username, password })
     
-    if (response) {
-      token.value = response
-      localStorage.setItem(apiConfig.tokenKey, response)
+    if (response && response.accessToken) {
+      token.value = response.accessToken
+      localStorage.setItem(apiConfig.tokenKey, response.accessToken)
+      
+      if (response.refreshToken) {
+        localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken)
+      }
       
       // 获取用户信息
       await fetchUserInfo()
@@ -74,10 +79,14 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function fetchUserInfo(): Promise<void> {
     try {
-      // 从 token 中解析用户名
+      // 从 token 中解析用户 UUID (sub 字段现在是 UUID)
       const payload = parseJwtPayload(token.value || '')
       if (payload?.sub) {
-        userInfo.value = { userName: payload.sub, state: 'enabled' }
+        userInfo.value = { 
+          id: payload.sub, 
+          userName: payload.sub, // 临时使用 UUID，实际应该根据 UUID 获取用户名
+          state: 'enabled' 
+        }
       }
     } catch {
       userInfo.value = null
@@ -91,6 +100,7 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null
     userInfo.value = null
     localStorage.removeItem(apiConfig.tokenKey)
+    localStorage.removeItem(apiConfig.refreshTokenKey)
     localStorage.removeItem(apiConfig.authKey)
   }
 
@@ -137,6 +147,7 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isLoggedIn,
     username,
+    userUuid,
     // Actions
     login,
     register,

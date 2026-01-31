@@ -13,8 +13,10 @@ const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api'
 export const apiConfig = {
   baseURL: `${API_BASE_URL}${API_PREFIX}`,
   timeout: 30000,
-  // Token 存储的 key
+  // Access Token 存储的 key
   tokenKey: 'foxnas_token',
+  // Refresh Token 存储的 key
+  refreshTokenKey: 'foxnas_refresh_token',
   // 认证信息存储的 key
   authKey: 'foxnas_auth',
 }
@@ -27,8 +29,10 @@ export const apiEndpoints = {
   auth: {
     login: '/auth/login',
     iniAdmin: '/auth/iniAdmin',
+    initRequired: '/auth/initRequired',
     sendVerifyCode: '/auth/sendVerifyCode',
     register: '/auth/reg',
+    refresh: '/auth/refresh',
   },
   // 文件信息
   file: {

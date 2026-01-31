@@ -53,70 +53,70 @@ class UserService {
   /**
    * 删除用户
    * DELETE /api/user/delUser
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    */
-  async deleteUser(userName: string): Promise<void> {
-    await http.delete(apiEndpoints.user.delete, { userName })
+  async deleteUser(uuid: string): Promise<void> {
+    await http.delete(apiEndpoints.user.delete, { uuid })
   }
 
   /**
    * 封禁用户
    * PUT /api/user/blockUser
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    */
-  async blockUser(userName: string): Promise<void> {
-    await http.put(apiEndpoints.user.block, null, { params: { userName } })
+  async blockUser(uuid: string): Promise<void> {
+    await http.put(apiEndpoints.user.block, null, { params: { uuid } })
   }
 
   /**
    * 解封用户
    * PUT /api/user/unblockUser
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    */
-  async unblockUser(userName: string): Promise<void> {
-    await http.put(apiEndpoints.user.unblock, null, { params: { userName } })
+  async unblockUser(uuid: string): Promise<void> {
+    await http.put(apiEndpoints.user.unblock, null, { params: { uuid } })
   }
 
   /**
    * 修改用户密码
    * PUT /api/user/changePassword
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    * @param password 新密码
    */
-  async changePassword(userName: string, password: string): Promise<void> {
-    await http.put(apiEndpoints.user.changePassword, { userName, password })
+  async changePassword(uuid: string, password: string): Promise<void> {
+    await http.put(apiEndpoints.user.changePassword, { uuid, password })
   }
 
   /**
    * 获取用户权限列表
    * GET /api/user/permissions
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    */
-  async getUserPermissions(userName: string): Promise<UserPermission[]> {
-    return await http.get<UserPermission[]>(apiEndpoints.user.permissions, { userName })
+  async getUserPermissions(uuid: string): Promise<UserPermission[]> {
+    return await http.get<UserPermission[]>(apiEndpoints.user.permissions, { uuid })
   }
 
   /**
    * 授予用户权限
    * PUT /api/user/grantPermission
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    * @param areaName 权限区域名称
    */
-  async grantPermission(userName: string, areaName: string): Promise<void> {
+  async grantPermission(uuid: string, areaName: string): Promise<void> {
     await http.put(apiEndpoints.user.grantPermission, null, {
-      params: { userName, areaName },
+      params: { uuid, areaName },
     })
   }
 
   /**
    * 撤销用户权限
    * PUT /api/user/revokePermission
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    * @param areaName 权限区域名称
    */
-  async revokePermission(userName: string, areaName: string): Promise<void> {
+  async revokePermission(uuid: string, areaName: string): Promise<void> {
     await http.put(apiEndpoints.user.revokePermission, null, {
-      params: { userName, areaName },
+      params: { uuid, areaName },
     })
   }
 
@@ -132,35 +132,35 @@ class UserService {
    * 更新用户信息
    * PUT /api/user/updateUser
    * @param user 用户信息
-   * @param originalName 原始用户名
+   * @param uuid 用户 UUID
    */
-  async updateUser(user: User, originalName: string): Promise<void> {
-    await http.put(apiEndpoints.user.update, user, { params: { originalName } })
+  async updateUser(user: User, uuid: string): Promise<void> {
+    await http.put(apiEndpoints.user.update, user, { params: { uuid } })
   }
 
   /**
    * 授予用户资源
    * PUT /api/user/grantResource
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    * @param resourcePath 资源路径
    * @param type 权限类型
    */
-  async grantResource(userName: string, resourcePath: string, type: string): Promise<void> {
+  async grantResource(uuid: string, resourcePath: string, type: string): Promise<void> {
     await http.put(apiEndpoints.user.grantResource, null, {
-      params: { userName, resourcePath, type },
+      params: { uuid, resourcePath, type },
     })
   }
 
   /**
    * 撤销用户资源
    * PUT /api/user/revokeResource
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    * @param resourcePath 资源路径
    * @param type 权限类型
    */
-  async revokeResource(userName: string, resourcePath: string, type: string): Promise<void> {
+  async revokeResource(uuid: string, resourcePath: string, type: string): Promise<void> {
     await http.put(apiEndpoints.user.revokeResource, null, {
-      params: { userName, resourcePath, type },
+      params: { uuid, resourcePath, type },
     })
   }
 
@@ -169,23 +169,23 @@ class UserService {
    * PUT /api/user/modifyResource
    */
   async modifyResource(
-    userName: string,
+    uuid: string,
     oldResourcePath: string,
     newResourcePath: string,
     newTypeList: string[]
   ): Promise<void> {
     await http.put(apiEndpoints.user.modifyResource, newTypeList, {
-      params: { userName, oldResourcePath, newResourcePath },
+      params: { uuid, oldResourcePath, newResourcePath },
     })
   }
 
   /**
    * 获取用户所有资源
    * GET /api/user/allResources
-   * @param userName 用户名
+   * @param uuid 用户 UUID
    */
-  async getUserResources(userName: string): Promise<UserResource[]> {
-    return await http.get<UserResource[]>(apiEndpoints.user.allResources, { userName })
+  async getUserResources(uuid: string): Promise<UserResource[]> {
+    return await http.get<UserResource[]>(apiEndpoints.user.allResources, { uuid })
   }
 
   /**
@@ -193,12 +193,12 @@ class UserService {
    * POST /api/user/createResource
    */
   async createResource(
-    userName: string,
+    uuid: string,
     resourcePath: string,
     typeList: string[]
   ): Promise<void> {
     await http.post(apiEndpoints.user.createResource, typeList, {
-      params: { userName, resourcePath },
+      params: { uuid, resourcePath },
     })
   }
 
@@ -206,8 +206,8 @@ class UserService {
    * 删除用户资源
    * DELETE /api/user/deleteResource
    */
-  async deleteResource(userName: string, resourcePath: string): Promise<void> {
-    await http.delete(apiEndpoints.user.deleteResource, { userName, resourcePath })
+  async deleteResource(uuid: string, resourcePath: string): Promise<void> {
+    await http.delete(apiEndpoints.user.deleteResource, { uuid, resourcePath })
   }
 
   /**

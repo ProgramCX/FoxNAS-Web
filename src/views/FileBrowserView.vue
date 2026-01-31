@@ -49,7 +49,7 @@
             </div>
           </div>
         </div>
-        <n-empty v-if="!loading && fileList.length === 0" description="该文件夹为空" />
+        <n-empty v-if="!loading && fileList.length === 0" :description="t('files.folderEmpty')" />
       </n-spin>
     </n-card>
   </div>
@@ -59,6 +59,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import type { FileInfo } from '@/types'
 import {
@@ -70,6 +71,8 @@ import {
   RefreshOutline,
   ArrowUpOutline,
 } from '@vicons/ionicons5'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -103,7 +106,7 @@ async function fetchFiles(path: string) {
     fileList.value = response.list || []
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取文件列表失败')
+    message.error(err.message || t('files.getFileListFailed'))
   } finally {
     loading.value = false
   }

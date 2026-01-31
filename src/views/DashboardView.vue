@@ -20,7 +20,7 @@
     <!-- 动态图表区域 -->
     <div class="charts-grid">
       <!-- CPU 使用率 -->
-      <n-card title="CPU 使用率" class="chart-card">
+      <n-card :title="t('dashboard.cpuUsage')" class="chart-card">
         <template #header-extra>
           <n-tag :type="cpuUsage > 80 ? 'error' : cpuUsage > 50 ? 'warning' : 'success'" size="small">
             {{ cpuUsage.toFixed(1) }}%
@@ -30,7 +30,7 @@
       </n-card>
 
       <!-- 内存使用率 -->
-      <n-card title="内存剩余情况" class="chart-card">
+      <n-card :title="t('dashboard.memoryRemaining')" class="chart-card">
         <template #header-extra>
           <n-tag :type="memoryUsage > 80 ? 'error' : memoryUsage > 50 ? 'warning' : 'success'" size="small">
             {{ memoryUsage.toFixed(1) }}%
@@ -38,13 +38,13 @@
         </template>
         <div ref="memoryChartRef" class="chart-container"></div>
         <div class="memory-info">
-          <span>已用: {{ formatBytes(memoryUsed) }}</span>
-          <span>总计: {{ formatBytes(memoryTotal) }}</span>
+          <span>{{ t('dashboard.used') }}: {{ formatBytes(memoryUsed) }}</span>
+          <span>{{ t('dashboard.total') }}: {{ formatBytes(memoryTotal) }}</span>
         </div>
       </n-card>
 
       <!-- 网络流量 -->
-      <n-card title="网络流量" class="chart-card">
+      <n-card :title="t('dashboard.networkTraffic')" class="chart-card">
         <template #header-extra>
           <div class="network-stats">
             <span class="download"><n-icon color="#18a058"><ArrowDownOutline /></n-icon> {{ formatSpeed(totalDownloadSpeed) }}</span>
@@ -57,11 +57,11 @@
 
     <!-- 硬件信息 -->
     <div class="dashboard-grid">
-      <n-card title="硬件信息" class="hardware-card">
+      <n-card :title="t('dashboard.hardwareInfo')" class="hardware-card">
         <template #header-extra>
           <n-button text type="primary" @click="fetchHardwareInfo" :loading="loadingHardware">
             <template #icon><n-icon><RefreshOutline /></n-icon></template>
-            刷新
+            {{ t('common.refresh') }}
           </n-button>
         </template>
         <n-spin :show="loadingHardware">
@@ -70,11 +70,11 @@
             <div class="info-section">
               <div class="section-header">
                 <n-icon><LaptopOutline /></n-icon>
-                <span>系统信息</span>
+                <span>{{ t('dashboard.systemInfo') }}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">操作系统:</span>
-                <span class="info-value">{{ hardwareData.operatingSystem || '未知' }}</span>
+                <span class="info-label">{{ t('dashboard.operatingSystem') }}:</span>
+                <span class="info-value">{{ hardwareData.operatingSystem || t('common.unknown') }}</span>
               </div>
             </div>
 
@@ -82,14 +82,14 @@
             <div class="info-section" v-if="hardwareData.cpuModel">
               <div class="section-header">
                 <n-icon><HardwareChipOutline /></n-icon>
-                <span>处理器</span>
+                <span>{{ t('dashboard.processor') }}</span>
               </div>
               <div class="info-row">
-                <span class="info-label">型号:</span>
+                <span class="info-label">{{ t('dashboard.model') }}:</span>
                 <span class="info-value">{{ hardwareData.cpuModel }}</span>
               </div>
               <div class="info-row" v-if="hardwareData.cpuVendor">
-                <span class="info-label">厂商:</span>
+                <span class="info-label">{{ t('dashboard.vendor') }}:</span>
                 <span class="info-value">{{ hardwareData.cpuVendor }}</span>
               </div>
             </div>
@@ -98,14 +98,14 @@
             <div class="info-section" v-if="hardwareData.mainBoardModel || hardwareData.mainBoardVendor">
               <div class="section-header">
                 <n-icon><GridOutline /></n-icon>
-                <span>主板</span>
+                <span>{{ t('dashboard.motherboard') }}</span>
               </div>
               <div class="info-row" v-if="hardwareData.mainBoardVendor">
-                <span class="info-label">厂商:</span>
+                <span class="info-label">{{ t('dashboard.vendor') }}:</span>
                 <span class="info-value">{{ hardwareData.mainBoardVendor }}</span>
               </div>
               <div class="info-row" v-if="hardwareData.mainBoardModel && hardwareData.mainBoardModel !== 'unknown'">
-                <span class="info-label">型号:</span>
+                <span class="info-label">{{ t('dashboard.model') }}:</span>
                 <span class="info-value">{{ hardwareData.mainBoardModel }}</span>
               </div>
             </div>
@@ -114,12 +114,12 @@
             <div class="info-section" v-if="hardwareData.memoryList && hardwareData.memoryList.length">
               <div class="section-header">
                 <n-icon><BarChartOutline /></n-icon>
-                <span>内存 ({{ getTotalMemory() }}GB)</span>
+                <span>{{ t('dashboard.memory') }} ({{ getTotalMemory() }}GB)</span>
               </div>
               <div class="memory-list">
                 <div class="memory-item" v-for="(mem, index) in hardwareData.memoryList" :key="index">
                   <div class="info-row">
-                    <span class="info-label">插槽 {{ index + 1 }}:</span>
+                    <span class="info-label">{{ t('dashboard.slot') }} {{ index + 1 }}:</span>
                     <span class="info-value">{{ mem.vendor }} {{ mem.model }} {{ mem.sizeGb }}GB</span>
                   </div>
                 </div>
@@ -130,7 +130,7 @@
             <div class="info-section" v-if="hardwareData.diskList && hardwareData.diskList.length">
               <div class="section-header">
                 <n-icon><LibraryOutline /></n-icon>
-                <span>存储 ({{ getTotalDisk() }}GB)</span>
+                <span>{{ t('dashboard.storage') }} ({{ getTotalDisk() }}GB)</span>
               </div>
               <div class="disk-list">
                 <div class="disk-item" v-for="(disk, index) in hardwareData.diskList" :key="index">
@@ -138,8 +138,8 @@
                     <span class="disk-name">{{ disk.model || disk.vendorOrSerial }}</span>
                   </div>
                   <div class="disk-detail">
-                    <span>容量: {{ disk.sizeGb }}GB </span>
-                    <span v-if="disk.vendorOrSerial && disk.vendorOrSerial !== disk.model">序列号: {{ disk.vendorOrSerial }}</span>
+                    <span>{{ t('dashboard.capacity') }}: {{ disk.sizeGb }}GB </span>
+                    <span v-if="disk.vendorOrSerial && disk.vendorOrSerial !== disk.model">{{ t('dashboard.serialNumber') }}: {{ disk.vendorOrSerial }}</span>
                   </div>
                 </div>
               </div>
@@ -149,7 +149,7 @@
             <div class="info-section" v-if="hardwareData.gpuList && hardwareData.gpuList.length">
               <div class="section-header">
                 <n-icon><TvOutline /></n-icon>
-                <span>显卡</span>
+                <span>{{ t('dashboard.graphics') }}</span>
               </div>
               <div class="gpu-list">
                 <div class="gpu-item" v-for="(gpu, index) in hardwareData.gpuList" :key="index">
@@ -161,12 +161,12 @@
               </div>
             </div>
           </div>
-          <n-empty v-else description="暂无硬件信息" />
+          <n-empty v-else :description="t('dashboard.noHardwareInfo')" />
         </n-spin>
       </n-card>
 
       <!-- 磁盘使用情况 -->
-      <n-card title="磁盘使用情况" class="disk-usage-card">
+      <n-card :title="t('dashboard.diskUsage')" class="disk-usage-card">
         <n-spin :show="loadingDisk">
           <div class="disk-usage-list" v-if="diskUsageList.length">
             <div class="disk-usage-item" v-for="(disk, index) in diskUsageList" :key="index">
@@ -181,34 +181,34 @@
                 :show-indicator="false"
               />
               <div class="disk-usage-detail">
-                <span>已用: {{ formatBytes(disk.used) }}</span>
-                <span>可用: {{ formatBytes(disk.available) }}</span>
+                <span>{{ t('dashboard.used') }}: {{ formatBytes(disk.used) }}</span>
+                <span>{{ t('dashboard.free') }}: {{ formatBytes(disk.available) }}</span>
               </div>
             </div>
           </div>
-          <n-empty v-else-if="!loadingDisk" description="暂无磁盘信息" />
+          <n-empty v-else-if="!loadingDisk" :description="t('dashboard.noDiskInfo')" />
         </n-spin>
       </n-card>
     </div>
 
     <!-- 快速操作 -->
-    <n-card title="快速操作" class="quick-actions-card">
+    <n-card :title="t('dashboard.quickActions')" class="quick-actions-card">
       <div class="quick-actions">
         <n-button @click="router.push('/files')">
           <template #icon><n-icon><FolderOutline /></n-icon></template>
-          文件管理
+          {{ t('nav.files') }}
         </n-button>
         <n-button @click="router.push('/users')" v-if="isAdmin">
           <template #icon><n-icon><PeopleOutline /></n-icon></template>
-          用户管理
+          {{ t('nav.users') }}
         </n-button>
         <n-button @click="router.push('/ddns')">
           <template #icon><n-icon><CloudOutline /></n-icon></template>
-          DDNS设置
+          {{ t('nav.ddns') }}
         </n-button>
         <n-button @click="router.push('/settings')">
           <template #icon><n-icon><SettingsOutline /></n-icon></template>
-          个人设置
+          {{ t('nav.settings') }}
         </n-button>
       </div>
     </n-card>
@@ -219,6 +219,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { hardwareService } from '@/api/services/hardware'
 import { useAuthStore } from '@/stores/auth'
 import * as echarts from 'echarts'
@@ -242,6 +243,7 @@ import {
 const router = useRouter()
 const message = useMessage()
 const authStore = useAuthStore()
+const { t, locale } = useI18n()
 
 // 状态
 const hardwareInfo = ref<HardwareInfoDTO | null>(null)
@@ -297,28 +299,28 @@ const isAdmin = computed(() => authStore.username === 'admin')
 const statusCards = computed(() => [
   {
     key: 'status',
-    label: '系统状态',
-    value: systemStatus.value === 'online' ? '运行中' : '离线',
+    label: t('dashboard.systemStatus'),
+    value: systemStatus.value === 'online' ? t('common.online') : t('common.offline'),
     icon: CheckmarkCircleOutline,
     color: systemStatus.value === 'online' ? '#18a058' : '#d03050',
   },
   {
     key: 'cpu',
-    label: 'CPU使用率',
+    label: t('dashboard.cpuUsage'),
     value: cpuUsage.value.toFixed(1) + '%',
     icon: HardwareChipOutline,
     color: cpuUsage.value > 80 ? '#d03050' : cpuUsage.value > 50 ? '#f0a020' : '#18a058',
   },
   {
     key: 'memory',
-    label: '内存使用率',
+    label: t('dashboard.memoryUsage'),
     value: memoryUsage.value.toFixed(1) + '%',
     icon: BarChartOutline,
     color: memoryUsage.value > 80 ? '#d03050' : memoryUsage.value > 50 ? '#f0a020' : '#18a058',
   },
   {
     key: 'network',
-    label: '网络下载',
+    label: t('dashboard.networkDownload'),
     value: formatSpeed(totalDownloadSpeed.value),
     icon: ArrowDownOutline,
     color: '#2080f0',
@@ -355,7 +357,7 @@ function initCharts() {
     memoryChart.setOption({
       tooltip: { 
         trigger: 'axis', 
-        formatter: (params: any) => `剩余内存: ${params[0].value.toFixed(2)} GB` 
+        formatter: (params: any) => `${t('dashboard.remainingMemory')}: ${params[0].value.toFixed(2)} GB` 
       },
       grid: { left: 60, right: 20, top: 30, bottom: 30 },
       xAxis: { type: 'category', boundaryGap: false, show: false },
@@ -365,7 +367,7 @@ function initCharts() {
         axisLabel: { formatter: '{value} GB' }
       },
       series: [{
-        name: '剩余内存',
+        name: t('dashboard.remainingMemory'),
         type: 'line',
         smooth: true,
         areaStyle: { opacity: 0.3 },
@@ -381,13 +383,13 @@ function initCharts() {
     networkChart = echarts.init(networkChartRef.value)
     networkChart.setOption({
       tooltip: { trigger: 'axis', formatter: (params: any) => `${params[0].seriesName}: ${params[0].value.toFixed(2)} KB/s` },
-      legend: { data: ['上传', '下载'], top: 0 },
+      legend: { data: [t('dashboard.upload'), t('dashboard.download')], top: 0 },
       grid: { left: 50, right: 20, top: 40, bottom: 30 },
       xAxis: { type: 'category', boundaryGap: false, show: false },
       yAxis: { type: 'value', axisLabel: { formatter: '{value} KB/s' } },
       series: [
         {
-          name: '上传',
+          name: t('dashboard.upload'),
           type: 'line',
           smooth: true,
           lineStyle: { width: 2 },
@@ -395,7 +397,7 @@ function initCharts() {
           itemStyle: { color: '#f0a020' },
         },
         {
-          name: '下载',
+          name: t('dashboard.download'),
           type: 'line',
           smooth: true,
           lineStyle: { width: 2 },
@@ -429,8 +431,8 @@ function updateCharts() {
   if (networkChart && networkUploadQueue.value.length > 0) {
     networkChart.setOption({
       series: [
-        { name: '上传', data: networkUploadQueue.value },
-        { name: '下载', data: networkDownloadQueue.value },
+        { name: t('dashboard.upload'), data: networkUploadQueue.value },
+        { name: t('dashboard.download'), data: networkDownloadQueue.value },
       ],
     })
   }
@@ -566,7 +568,7 @@ async function fetchHardwareInfo() {
     }
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取硬件信息失败')
+    message.error(err.message || t('common.fetchFailed'))
   } finally {
     loadingHardware.value = false
   }

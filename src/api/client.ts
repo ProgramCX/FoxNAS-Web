@@ -18,9 +18,14 @@ const httpClient: AxiosInstance = axios.create({
   },
 })
 
+// 是否正在刷新 token 的标志
+let isRefreshing = false
+// 等待刷新 token 的请求队列
+let failedRequestsQueue: Array<{ resolve: (token: string) => void; reject: (error: Error) => void }> = []
+
 /**
  * 请求拦截器
- * 自动添加 JWT Token 到请求头
+ * 自动添加 JWT Access Token 到请求头
  */
 httpClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
@@ -34,6 +39,46 @@ httpClient.interceptors.request.use(
     return Promise.reject(error)
   }
 )
+
+/**
+ * 尝试刷新 token
+ */
+async function tryRefreshToken(): Promise<string | null> {
+  console.log('尝试刷新 token...')
+  const authStore = useAuthStore()
+  const uuid = authStore.userUuid
+  if(!uuid) {
+    return null
+  }
+  const refreshToken = localStorage.getItem(apiConfig.refreshTokenKey)
+  if (!refreshToken) {
+    return null
+  }
+
+  try {
+    const response = await axios.post(
+      `${apiConfig.baseURL}/auth/refresh`,
+      { refreshToken,uuid },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
+
+    const { accessToken, refreshToken: newRefreshToken } = response.data
+    if (accessToken) {
+      localStorage.setItem(apiConfig.tokenKey, accessToken)
+      console.log('token 刷新成功')
+      if (newRefreshToken) {
+        localStorage.setItem(apiConfig.refreshTokenKey, newRefreshToken)
+      }
+      return accessToken
+    }
+    return null
+  } catch (error) {
+    // 刷新失败，清除所有 token
+    localStorage.removeItem(apiConfig.tokenKey)
+    localStorage.removeItem(apiConfig.refreshTokenKey)
+    return null
+  }
+}
 
 /**
  * 响应拦截器
@@ -50,16 +95,68 @@ httpClient.interceptors.response.use(
     return response
   },
   async (error) => {
-    const { response } = error
+    console.error('API 响应错误:', error)
+
+    const { response, config } = error
 
     // 401 未授权 - Token 过期或无效
-    if (response?.status === 401) {
-      const authStore = useAuthStore()
-      authStore.logout()
-      
-      // 如果不是登录页面，跳转到登录页
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login'
+    if (response?.status === 401 && config) {
+      // 如果是刷新 token 接口或登录接口，不进行刷新
+      if (config.url?.includes('/auth/refresh') || config.url?.includes('/auth/login')) {
+        const authStore = useAuthStore()
+        authStore.logout()
+        
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
+        return Promise.reject(error)
+      }
+
+      // 如果已经在刷新 token，加入队列等待
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedRequestsQueue.push({
+            resolve: (token: string) => {
+              config.headers.Authorization = `Bearer ${token}`
+              resolve(httpClient(config))
+            },
+            reject: (err: Error) => {
+              reject(err)
+            },
+          })
+        })
+      }
+
+      isRefreshing = true
+
+      try {
+        
+        const newToken = await tryRefreshToken()
+        if (newToken) {
+          // 刷新成功，更新所有等待的请求
+          config.headers.Authorization = `Bearer ${newToken}`
+          failedRequestsQueue.forEach(({ resolve }) => resolve(newToken))
+          failedRequestsQueue = []
+          return httpClient(config)
+        } else {
+          // 刷新失败，所有请求都拒绝
+          failedRequestsQueue.forEach(({ reject }) => reject(error))
+          failedRequestsQueue = []
+          throw error
+        }
+      } catch (refreshError) {
+        failedRequestsQueue.forEach(({ reject }) => reject(refreshError as Error))
+        failedRequestsQueue = []
+        
+        const authStore = useAuthStore()
+        authStore.logout()
+        
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
+        return Promise.reject(refreshError)
+      } finally {
+        isRefreshing = false
       }
     }
 

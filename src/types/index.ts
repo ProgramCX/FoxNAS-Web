@@ -32,7 +32,7 @@ export interface PageResponse<T> {
  * 用户相关类型
  */
 export interface User {
-  id?: number
+  id?: string
   userName: string
   password?: string
   state: 'enabled' | 'disabled'
@@ -53,14 +53,14 @@ export interface RegisterRequest {
 
 export interface UserPermission {
   permissionId?: number
-  ownerName: string
+  ownerUuid: string
   areaName: string
   permissionType: string
 }
 
 export interface UserResource {
   resourceId?: number
-  ownerName: string
+  ownerUuid: string
   folderName: string
   permissionType: string
 }

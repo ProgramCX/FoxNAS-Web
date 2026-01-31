@@ -9,7 +9,7 @@
       <template #header-extra>
         <n-button @click="router.back()">
           <template #icon><n-icon><ArrowBackOutline /></n-icon></template>
-          返回
+          {{ t('common.back') }}
         </n-button>
       </template>
 
@@ -23,7 +23,7 @@
           @loadedmetadata="onLoadedMetadata"
           @error="onError"
         >
-          您的浏览器不支持视频播放
+          {{ t('media.browserNotSupportVideo') }}
         </video>
         
         <div v-else-if="mediaType === 'audio'" class="audio-player">
@@ -33,16 +33,16 @@
             </n-icon>
           </div>
           <audio ref="audioRef" controls :src="audioUrl" @loadedmetadata="onLoadedMetadata" @error="onError">
-            您的浏览器不支持音频播放
+            {{ t('media.browserNotSupportAudio') }}
           </audio>
         </div>
 
         <div v-else class="unsupported">
-          <n-empty description="不支持该类型的媒体文件">
+          <n-empty :description="t('media.unsupportedMediaType')">
             <template #extra>
               <n-button type="primary" @click="downloadFile">
                 <template #icon><n-icon><DownloadOutline /></n-icon></template>
-                下载文件
+                {{ t('media.downloadFile') }}
               </n-button>
             </template>
           </n-empty>
@@ -52,10 +52,10 @@
       <template #footer>
         <div class="player-info">
           <n-descriptions :column="1" label-placement="left">
-            <n-descriptions-item label="文件大小">
+            <n-descriptions-item :label="t('media.fileSize')">
               {{ formatBytes(fileSize) }}
             </n-descriptions-item>
-            <n-descriptions-item label="时长" v-if="duration">
+            <n-descriptions-item :label="t('media.duration')" v-if="duration">
               {{ formatDuration(duration) }}
             </n-descriptions-item>
           </n-descriptions>
@@ -69,12 +69,15 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import {
   ArrowBackOutline,
   MusicalNotesOutline,
   DownloadOutline,
 } from '@vicons/ionicons5'
+
+const { t } = useI18n()
 
 const route = useRoute()
 const router = useRouter()
@@ -95,7 +98,7 @@ const filePath = computed(() => {
 
 const fileName = computed(() => {
   const parts = filePath.value.split('/')
-  return parts[parts.length - 1] || '未知文件'
+  return parts[parts.length - 1] || t('media.unknownFile')
 })
 
 const fileSize = ref(0)
@@ -124,7 +127,7 @@ async function checkMediaType() {
     }
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取媒体类型失败')
+    message.error(err.message || t('media.getMediaTypeFailed'))
     mediaType.value = 'other'
   } finally {
     loading.value = false
@@ -142,7 +145,7 @@ function onLoadedMetadata() {
 
 // 播放错误
 function onError() {
-  message.error('媒体加载失败，请尝试下载文件')
+  message.error(t('media.loadFailed'))
 }
 
 // 下载文件

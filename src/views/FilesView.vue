@@ -13,14 +13,14 @@
           v-for="tab in tabs" 
           :key="tab.id" 
           :name="tab.id" 
-          :tab="tab.name || '加载中...'"
+          :tab="tab.name || t('common.loading')"
           display-directive="show"
         >
         </n-tab-pane>
       </n-tabs>
       <n-button text type="primary" @click="addNewTab()" style="margin-left: 8px;" :disabled="!selectedRootPath">
         <template #icon><n-icon><AddOutline /></n-icon></template>
-        新建标签
+        {{ t('files.newTab') }}
       </n-button>
     </div>
 
@@ -29,7 +29,7 @@
       <n-select
         v-model:value="selectedRootPath"
         :options="authedDirOptions"
-        placeholder="选择目录"
+        :placeholder="t('files.selectDirectory')"
         size="small"
         style="flex: 1; max-width: 150px;"
         @update:value="handleRootPathChange"
@@ -53,7 +53,7 @@
                   <template #icon><n-icon><ChevronBackOutline /></n-icon></template>
                 </n-button>
               </template>
-              后退
+              {{ t('files.goBack') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -61,7 +61,7 @@
                   <template #icon><n-icon><ChevronForwardOutline /></n-icon></template>
                 </n-button>
               </template>
-              前进
+              {{ t('files.goForward') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -69,7 +69,7 @@
                   <template #icon><n-icon><ArrowUpOutline /></n-icon></template>
                 </n-button>
               </template>
-              上级目录
+              {{ t('files.goUp') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -77,7 +77,7 @@
                   <template #icon><n-icon><RefreshOutline /></n-icon></template>
                 </n-button>
               </template>
-              刷新
+              {{ t('common.refresh') }}
             </n-tooltip>
           </n-button-group>
 
@@ -88,7 +88,7 @@
             <n-select
               v-model:value="selectedRootPath"
               :options="authedDirOptions"
-              placeholder="根目录"
+              :placeholder="t('files.rootDirectory')"
               style="width: 160px"
               size="small"
               @update:value="handleRootPathChange"
@@ -100,7 +100,7 @@
                 :key="index"
                 @click="navigateToPathByIndex(index)"
               >
-                {{ part || '根目录' }}
+                {{ part || t('files.rootDirectory') }}
               </n-breadcrumb-item>
             </n-breadcrumb>
           </div>
@@ -110,7 +110,7 @@
           <!-- 搜索框 -->
           <n-input
             v-model:value="searchKeyword"
-            placeholder="搜索文件..."
+            :placeholder="t('files.searchFiles')"
             size="small"
             style="width: 200px"
             clearable
@@ -132,7 +132,7 @@
                   <template #icon><n-icon><CopyOutline /></n-icon></template>
                 </n-button>
               </template>
-              复制
+              {{ t('files.copy') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -140,7 +140,7 @@
                   <template #icon><n-icon><CutOutline /></n-icon></template>
                 </n-button>
               </template>
-              剪切
+              {{ t('files.cut') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -148,7 +148,7 @@
                   <template #icon><n-icon><ClipboardOutline /></n-icon></template>
                 </n-button>
               </template>
-              粘贴
+              {{ t('files.paste') }}
             </n-tooltip>
           </n-button-group>
 
@@ -161,7 +161,7 @@
                   <template #icon><n-icon><DownloadOutline /></n-icon></template>
                 </n-button>
               </template>
-              下载
+              {{ t('files.download') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -169,7 +169,7 @@
                   <template #icon><n-icon><TrashOutline /></n-icon></template>
                 </n-button>
               </template>
-              删除
+              {{ t('files.delete') }}
             </n-tooltip>
           </n-button-group>
 
@@ -180,10 +180,10 @@
               <template #trigger>
                 <n-button @click="showUploadDialog = true" :disabled="!canUpload" size="small" type="primary">
                   <template #icon><n-icon><CloudUploadOutline /></n-icon></template>
-                  上传
+                  {{ t('files.upload') }}
                 </n-button>
               </template>
-              上传
+              {{ t('files.upload') }}
             </n-tooltip>
             <n-tooltip>
               <template #trigger>
@@ -191,7 +191,7 @@
                   <template #icon><n-icon><AddOutline /></n-icon></template>
                 </n-button>
               </template>
-              新建文件夹
+              {{ t('files.newFolder') }}
             </n-tooltip>
           </n-button-group>
         </n-space>
@@ -202,9 +202,9 @@
             <template #icon>
               <n-icon><CopyOutline /></n-icon>
             </template>
-            {{ clipboardData.isCut ? '已剪切' : '已复制' }} {{ clipboardData.files.length }} 个文件
+            {{ clipboardData.isCut ? t('files.clipboard.cut') : t('files.clipboard.copied') }} {{ clipboardData.files.length }} {{ t('files.clipboard.filesCount', { n: clipboardData.files.length }) }}
           </n-tag>
-          <n-button text size="small" @click="clearClipboard">清空</n-button>
+          <n-button text size="small" @click="clearClipboard">{{ t('files.clipboard.clear') }}</n-button>
         </div>
       </div>
 
@@ -244,7 +244,7 @@
         <!-- 搜索框 -->
         <n-input
           v-model:value="searchKeyword"
-          placeholder="搜索..."
+          :placeholder="t('files.searchPlaceholder')"
           size="small"
           clearable
           @keyup.enter="searchFiles"
@@ -258,16 +258,16 @@
         <!-- 剪贴板状态 -->
         <div class="clipboard-status-mobile" v-if="clipboardData.files.length > 0">
           <n-tag size="small" :type="clipboardData.isCut ? 'warning' : 'info'">
-            {{ clipboardData.isCut ? '剪切' : '复制' }}{{ clipboardData.files.length }}个
+            {{ clipboardData.isCut ? t('files.cut') : t('files.copy') }}{{ clipboardData.files.length }}{{ t('files.file') }}
           </n-tag>
-          <n-button text size="small" @click="clearClipboard">清空</n-button>
+          <n-button text size="small" @click="clearClipboard">{{ t('files.clipboard.clear') }}</n-button>
         </div>
       </div>
     </n-card>
 
     <!-- 移动端更多操作抽屉 -->
     <n-drawer v-model:show="showMoreActions" :width="280" placement="bottom">
-      <n-drawer-content title="更多操作" closable>
+      <n-drawer-content :title="t('files.moreActions')" closable>
         <n-space vertical :size="12">
           <n-button 
             block 
@@ -276,7 +276,7 @@
             :style="{ justifyContent: 'flex-start' }"
           >
             <template #icon><n-icon><CopyOutline /></n-icon></template>
-            复制 ({{ selectedRows.length }})
+            {{ t('files.copy') }} ({{ selectedRows.length }})
           </n-button>
           <n-button 
             block 
@@ -285,7 +285,7 @@
             :style="{ justifyContent: 'flex-start' }"
           >
             <template #icon><n-icon><CutOutline /></n-icon></template>
-            剪切 ({{ selectedRows.length }})
+            {{ t('files.cut') }} ({{ selectedRows.length }})
           </n-button>
           <n-button 
             block 
@@ -294,7 +294,7 @@
             :style="{ justifyContent: 'flex-start' }"
           >
             <template #icon><n-icon><ClipboardOutline /></n-icon></template>
-            粘贴
+            {{ t('files.paste') }}
           </n-button>
           <n-button 
             block 
@@ -303,7 +303,7 @@
             :style="{ justifyContent: 'flex-start' }"
           >
             <template #icon><n-icon><DownloadOutline /></n-icon></template>
-            下载 ({{ selectedRows.length }})
+            {{ t('files.download') }} ({{ selectedRows.length }})
           </n-button>
           <n-button 
             block 
@@ -312,7 +312,7 @@
             :style="{ justifyContent: 'flex-start' }"
           >
             <template #icon><n-icon><TrashOutline /></n-icon></template>
-            删除 ({{ selectedRows.length }})
+            {{ t('files.delete') }} ({{ selectedRows.length }})
           </n-button>
         </n-space>
       </n-drawer-content>
@@ -327,10 +327,10 @@
           {{ currentTab.path }}
         </n-tag>
         <n-space class="permission-tags">
-          <n-tag v-if="currentAuthedDir.readable !== false" type="success" size="small">读取</n-tag>
-          <n-tag v-if="currentAuthedDir.writable !== false" type="warning" size="small">写入</n-tag>
-          <n-tag v-if="currentAuthedDir.downloadable !== false" type="info" size="small">下载</n-tag>
-          <n-tag v-if="currentAuthedDir.deletable !== false" type="error" size="small">删除</n-tag>
+          <n-tag v-if="currentAuthedDir.readable !== false" type="success" size="small">{{ t('files.permissions.read') }}</n-tag>
+          <n-tag v-if="currentAuthedDir.writable !== false" type="warning" size="small">{{ t('files.permissions.write') }}</n-tag>
+          <n-tag v-if="currentAuthedDir.downloadable !== false" type="info" size="small">{{ t('files.permissions.download') }}</n-tag>
+          <n-tag v-if="currentAuthedDir.deletable !== false" type="error" size="small">{{ t('files.permissions.delete') }}</n-tag>
         </n-space>
       </div>
 
@@ -347,21 +347,19 @@
             v-model:checked-row-keys="selectedRows"
             @update:checked-row-keys="handleSelectionChange"
           />
-          <!-- 加载更多提示 -->
           <div v-if="currentTab?.hasMore" class="load-more-hint">
             <n-spin v-if="currentTab?.loadingMore" size="small" />
-            <span v-else>滚动加载更多...</span>
+            <span v-else>{{ t('common.scrollLoadMore') }}</span>
           </div>
           <div v-else-if="currentTab?.fileList?.length > 0" class="load-more-hint">
-            已加载全部 {{ currentTab?.totalCount }} 个项目
+            {{ t('common.loadedAll', { n: currentTab?.totalCount }) }}
           </div>
         </n-scrollbar>
       </n-spin>
 
-      <!-- 空状态 -->
       <n-empty
         v-if="!currentTab?.loading && (currentTab?.fileList?.length === 0)"
-        description="该文件夹为空"
+        :description="t('files.emptyFolder')"
       />
     </n-card>
 
@@ -374,11 +372,10 @@
       @select="handleContextMenuSelect"
     />
 
-    <!-- 上传对话框 -->
     <n-modal 
       v-model:show="showUploadDialog" 
       preset="dialog" 
-      title="上传文件" 
+      :title="t('files.uploadFile')" 
       class="upload-modal"
       :style="{ width: isMobile ? '95vw' : '600px', maxWidth: '600px' }"
     >
@@ -389,13 +386,13 @@
             <n-radio value="file">
               <div class="upload-mode-option">
                 <n-icon size="18"><DocumentOutline /></n-icon>
-                <span>上传文件</span>
+                <span>{{ t('files.uploadFile') }}</span>
               </div>
             </n-radio>
             <n-radio value="directory">
               <div class="upload-mode-option">
                 <n-icon size="18"><FolderOutline /></n-icon>
-                <span>上传文件夹</span>
+                <span>{{ t('files.uploadFolder') }}</span>
               </div>
             </n-radio>
           </n-space>
@@ -413,8 +410,8 @@
           <div class="upload-icon">
             <n-icon size="56" color="var(--primary-color)"><CloudUploadOutline /></n-icon>
           </div>
-          <div class="upload-text">点击或拖拽文件到此区域上传</div>
-          <div class="upload-hint">支持单个或批量上传，文件大小不限</div>
+          <div class="upload-text">{{ t('files.clickOrDragToUpload') }}</div>
+          <div class="upload-hint">{{ t('files.uploadHint') }}</div>
         </n-upload-dragger>
       </n-upload>
 
@@ -430,18 +427,17 @@
           <div class="upload-icon">
             <n-icon size="56" color="var(--primary-color)"><FolderOutline /></n-icon>
           </div>
-          <div class="upload-text">点击选择文件夹上传</div>
-          <div class="upload-hint">将保持文件夹结构并自动创建目录</div>
+          <div class="upload-text">{{ t('files.clickToSelectFolder') }}</div>
+          <div class="upload-hint">{{ t('files.uploadFolderHint') }}</div>
         </n-upload-dragger>
       </n-upload>
 
-      <!-- 上传进度 -->
       <div v-if="uploadProgress.length" class="upload-progress-section">
         <div class="upload-progress-header">
-          <span class="progress-title">上传进度</span>
+          <span class="progress-title">{{ t('files.uploadProgress') }}</span>
           <n-tag :type="uploadFailedCount > 0 ? 'warning' : (uploadSuccessCount === uploadTotal ? 'success' : 'info')" size="small">
-            {{ uploadSuccessCount }}/{{ uploadTotal }} 完成
-            <template v-if="uploadFailedCount > 0">, {{ uploadFailedCount }} 失败</template>
+            {{ uploadSuccessCount }}/{{ uploadTotal }} {{ t('files.completed') }}
+            <template v-if="uploadFailedCount > 0">, {{ uploadFailedCount }} {{ t('files.failed') }}</template>
           </n-tag>
         </div>
         <n-scrollbar style="max-height: 200px">
@@ -467,24 +463,23 @@
       </div>
     </n-modal>
 
-    <!-- 新建文件夹对话框 -->
     <n-modal 
       v-model:show="showCreateDirDialog" 
       preset="dialog" 
-      title="新建文件夹"
+      :title="t('files.newFolder')"
       :style="{ width: isMobile ? '90vw' : '400px', maxWidth: '400px' }"
     >
-      <n-form-item label="文件夹名称">
+      <n-form-item :label="t('files.folderName')">
         <n-input
           v-model:value="newFolderName"
-          placeholder="请输入文件夹名称"
+          :placeholder="t('files.enterFolderName')"
           @keyup.enter="createDirectory"
           size="large"
         />
       </n-form-item>
       <template #action>
-        <n-button @click="showCreateDirDialog = false">取消</n-button>
-        <n-button type="primary" @click="createDirectory" :loading="creating">创建</n-button>
+        <n-button @click="showCreateDirDialog = false">{{ t('common.cancel') }}</n-button>
+        <n-button type="primary" @click="createDirectory" :loading="creating">{{ t('files.create') }}</n-button>
       </template>
     </n-modal>
   </div>
@@ -493,6 +488,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, h, watch, nextTick } from 'vue'
 import { useMessage, useDialog, NButton, NIcon, NTag, NInput, NTooltip, NSpace, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import type { FileInfo, AuthedDir } from '@/types'
 import {
@@ -507,6 +503,7 @@ import { format } from 'date-fns'
 
 const message = useMessage()
 const dialog = useDialog()
+const { t } = useI18n()
 
 // ============ 类型定义 ============
 interface FileTab {
@@ -620,17 +617,17 @@ const contextMenuOptions = computed<DropdownOption[]>(() => {
 
   if (target) {
     if (target.type === 'directory') {
-      options.push({ label: '打开', key: 'open', icon: () => h(NIcon, null, { default: () => h(FolderOpenOutline) }) })
+      options.push({ label: t('common.open'), key: 'open', icon: () => h(NIcon, null, { default: () => h(FolderOpenOutline) }) })
     } else {
-      options.push({ label: '打开', key: 'open', icon: () => h(NIcon, null, { default: () => h(OpenOutline) }) })
-      options.push({ label: '下载', key: 'download', icon: () => h(NIcon, null, { default: () => h(DownloadOutline) }) })
+      options.push({ label: t('common.open'), key: 'open', icon: () => h(NIcon, null, { default: () => h(OpenOutline) }) })
+      options.push({ label: t('files.download'), key: 'download', icon: () => h(NIcon, null, { default: () => h(DownloadOutline) }) })
     }
     options.push({ type: 'divider', key: 'd1' })
-    options.push({ label: '复制', key: 'copy', icon: () => h(NIcon, null, { default: () => h(CopyOutline) }) })
-    options.push({ label: '剪切', key: 'cut', icon: () => h(NIcon, null, { default: () => h(CutOutline) }) })
+    options.push({ label: t('files.copy'), key: 'copy', icon: () => h(NIcon, null, { default: () => h(CopyOutline) }) })
+    options.push({ label: t('files.cut'), key: 'cut', icon: () => h(NIcon, null, { default: () => h(CutOutline) }) })
     options.push({ type: 'divider', key: 'd2' })
-    options.push({ label: '重命名', key: 'rename', icon: () => h(NIcon, null, { default: () => h(CreateOutline) }) })
-    options.push({ label: '删除', key: 'delete', icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) })
+    options.push({ label: t('files.rename'), key: 'rename', icon: () => h(NIcon, null, { default: () => h(CreateOutline) }) })
+    options.push({ label: t('files.delete'), key: 'delete', icon: () => h(NIcon, null, { default: () => h(TrashOutline) }) })
   }
 
   return options
@@ -661,7 +658,7 @@ const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
         width: 40,
       },
       {
-        title: '名称',
+        title: t('files.fileName'),
         key: 'name',
         ellipsis: {
           tooltip: true
@@ -674,7 +671,7 @@ const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
         }
       },
       {
-        title: '修改日期',
+        title: t('files.modifiedDate'),
         key: 'lastModified',
         width: 100,
         render: (row) => format(new Date(row.lastModified), 'MM-dd HH:mm')
@@ -689,7 +686,7 @@ const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
       width: 50,
     },
     {
-      title: '名称',
+      title: t('files.fileName'),
       key: 'name',
       ellipsis: {
         tooltip: true
@@ -702,22 +699,22 @@ const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
       }
     },
     {
-      title: '大小',
+      title: t('files.fileSize'),
       key: 'size',
       width: 100,
       render: (row) => row.type === 'directory' ? '-' : formatBytes(row.size)
     },
     {
-      title: '修改日期',
+      title: t('files.modifiedDate'),
       key: 'lastModified',
       width: 180,
       render: (row) => format(new Date(row.lastModified), 'yyyy-MM-dd HH:mm')
     },
     {
-      title: '类型',
+      title: t('files.fileType'),
       key: 'type',
       width: 80,
-      render: (row) => h(NTag, { size: 'small', type: row.type === 'directory' ? 'info' : 'default' }, { default: () => row.type === 'directory' ? '文件夹' : '文件' })
+      render: (row) => h(NTag, { size: 'small', type: row.type === 'directory' ? 'info' : 'default' }, { default: () => row.type === 'directory' ? t('files.directory') : t('files.file') })
     }
   ]
 })
@@ -751,7 +748,7 @@ function generateTabId(): string {
 function addNewTab(path?: string, name?: string) {
   const rootPath = selectedRootPath.value || '/'
   const tabPath = path || rootPath
-  const tabName = name || tabPath.split(/[\/\\]/).filter(Boolean).pop() || '根目录'
+  const tabName = name || tabPath.split(/[\/\\]/).filter(Boolean).pop() || t('files.rootDirectory')
 
   const newTab: FileTab = {
     id: generateTabId(),
@@ -932,10 +929,10 @@ async function fetchTabFiles(tab: FileTab, loadMore: boolean = false) {
 
     // 更新标签页名称
     const pathParts = tab.path.split(/[\/\\]/).filter(Boolean)
-    tab.name = pathParts.length > 0 ? pathParts[pathParts.length - 1] : tab.rootPath.split(/[\/\\]/).filter(Boolean).pop() || '根目录'
+    tab.name = pathParts.length > 0 ? pathParts[pathParts.length - 1] : tab.rootPath.split(/[\/\\]/).filter(Boolean).pop() || t('files.rootDirectory')
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取文件列表失败')
+    message.error(err.message || t('files.getFileListFailed'))
     if (!loadMore) {
       tab.fileList = []
     }
@@ -1007,41 +1004,41 @@ function handleContextMenuSelect(key: string) {
 async function downloadFile(file: FileInfo) {
   try {
     await fileService.downloadFile(file.path, file.name)
-    message.success('下载开始')
+    message.success(t('files.downloadSuccess'))
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '下载失败')
+    message.error(err.message || t('files.deleteFailed'))
   }
 }
 
 function renameFile(file: FileInfo) {
   const newNameRef = ref(file.name)
   dialog.create({
-    title: '重命名',
+    title: t('files.rename'),
     content: () => h('div', [
-      h('p', { style: 'margin-bottom: 8px' }, `将 "${file.name}" 重命名为:`),
+      h('p', { style: 'margin-bottom: 8px' }, `${t('files.rename')} "${file.name}":`),
       h(NInput, {
         value: newNameRef.value,
-        placeholder: '请输入新名称',
+        placeholder: t('files.enterNewName'),
         onUpdateValue: (val) => { newNameRef.value = val }
       }),
     ]),
-    positiveText: '确定',
-    negativeText: '取消',
+    positiveText: t('common.confirm'),
+    negativeText: t('common.cancel'),
     onPositiveClick: async () => {
       if (!newNameRef.value.trim()) {
-        message.error('名称不能为空')
+        message.error(t('validation.required'))
         return false
       }
       if (newNameRef.value === file.name) return
 
       try {
         await fileService.renameFile(file.path, newNameRef.value)
-        message.success('重命名成功')
+        message.success(t('files.renameSuccess'))
         refreshCurrentTab()
       } catch (error: unknown) {
         const err = error as Error
-        message.error(err.message || '重命名失败')
+        message.error(err.message || t('files.renameFailed'))
       }
     },
   })
@@ -1052,18 +1049,18 @@ async function deleteFiles(files: FileInfo[]) {
   const isDir = files.some(f => f.type === 'directory')
 
   dialog.warning({
-    title: '确认删除',
-    content: `确定要删除 "${files.map(f => f.name).join(', ')}" 吗？${isDir ? '\n注意：删除文件夹将递归删除其中所有文件！' : ''}`,
-    positiveText: '删除',
-    negativeText: '取消',
+    title: t('files.deleteConfirm'),
+    content: `${t('files.deleteConfirm')} "${files.map(f => f.name).join(', ')}"?`,
+    positiveText: t('files.delete'),
+    negativeText: t('common.cancel'),
     onPositiveClick: async () => {
       try {
         await fileService.deleteFiles(paths)
-        message.success('删除成功')
+        message.success(t('files.deleteSuccess'))
         refreshCurrentTab()
       } catch (error: unknown) {
         const err = error as Error
-        message.error(err.message || '删除失败')
+        message.error(err.message || t('files.deleteFailed'))
       }
     },
   })
@@ -1076,7 +1073,7 @@ function copyToClipboard(files: FileInfo[], isCut: boolean) {
     isCut,
     sourcePath: files[0]?.path.split('/').slice(0, -1).join('/') || ''
   }
-  message.success(isCut ? '已剪切文件' : '已复制文件')
+  message.success(isCut ? t('files.clipboard.cut') : t('files.clipboard.copied'))
 }
 
 async function pasteFiles() {
@@ -1094,16 +1091,16 @@ async function pasteFiles() {
   try {
     if (clipboardData.value.isCut) {
       await fileService.moveFiles(operations)
-      message.success('移动完成')
+      message.success(t('files.moveSuccess'))
     } else {
       await fileService.copyFiles(operations)
-      message.success('复制完成')
+      message.success(t('files.copySuccess'))
     }
     clearClipboard()
     refreshCurrentTab()
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '操作失败')
+    message.error(err.message || t('common.operationFailed'))
   }
 }
 
@@ -1133,7 +1130,7 @@ function downloadSelectedFiles() {
   // 过滤出文件（不支持下载文件夹）
   const files = selected.filter(f => f.type !== 'directory')
   if (files.length === 0) {
-    message.warning('请选择文件进行下载，文件夹不支持直接下载')
+    message.warning(t('files.downloadFolderWarning'))
     return
   }
   
@@ -1207,7 +1204,7 @@ function handleRootPathChange(value: string) {
 
 function createDirectory() {
   if (!newFolderName.value.trim()) {
-    message.error('请输入文件夹名称')
+    message.error(t('files.enterFolderName'))
     return
   }
   creating.value = true
@@ -1216,14 +1213,14 @@ function createDirectory() {
 
   fileService.createDir(dirPath)
     .then(() => {
-      message.success('创建成功')
+      message.success(t('files.createFolderSuccess'))
       showCreateDirDialog.value = false
       newFolderName.value = ''
       refreshCurrentTab()
     })
     .catch((error: unknown) => {
       const err = error as Error
-      message.error(err.message || '创建失败')
+      message.error(err.message || t('files.createFolderFailed'))
     })
     .finally(() => {
       creating.value = false
@@ -1272,12 +1269,12 @@ async function uploadSingleFile(
 async function handleFileUpload(options: { file: { file: File; id?: string; name?: string }; onProgress: (e: number) => void; onFinish: () => void; onError: () => void }) {
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
-  const fileName = file.name || fileObj?.name || '未知文件'
+  const fileName = file.name || fileObj?.name || t('media.unknownFile')
   const fileId = file.id
   
   const targetDir = getTargetDir()
   if (!targetDir || targetDir === '/') {
-    message.error('请先选择一个有效的目录')
+    message.error(t('files.selectValidDirectory'))
     onError()
     return
   }
@@ -1315,7 +1312,7 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
     }
     uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || '上传失败'}`)
+    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
     onError()
     checkUploadComplete()
   }
@@ -1338,7 +1335,7 @@ function handleFileUploadChange(options: { fileList: Array<{ id: string; name: s
 async function handleDirectoryUpload(options: { file: { file: File; id?: string; name?: string; fullPath?: string; batchId?: string }; onProgress: (e: number) => void; onFinish: () => void; onError: () => void }) {
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
-  const fileName = file.name || fileObj?.name || '未知文件'
+  const fileName = file.name || fileObj?.name || t('media.unknownFile')
   
   // 获取文件夹内的相对路径
   // Naive UI 使用 fullPath，原生 File API 使用 webkitRelativePath
@@ -1350,7 +1347,7 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
   
   const targetDir = getTargetDir()
   if (!targetDir || targetDir === '/') {
-    message.error('请先选择一个有效的目录')
+    message.error(t('files.selectValidDirectory'))
     onError()
     return
   }
@@ -1391,7 +1388,7 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
     }
     uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || '上传失败'}`)
+    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
     onError()
     checkUploadComplete()
   }
@@ -1424,19 +1421,19 @@ function checkUploadComplete() {
 async function handleUpload(options: { file: { file: File; id?: string; name?: string; path?: string }; onProgress: (e: number) => void; onFinish: () => void; onError: () => void }) {
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
-  const fileName = file.name || fileObj?.name || '未知文件'
+  const fileName = file.name || fileObj?.name || t('media.unknownFile')
   
   const relativePath = file.path || ''
   const targetDir = getTargetDir()
   
   if (!targetDir || targetDir === '/') {
-    message.error('请先选择一个有效的目录')
+    message.error(t('files.selectValidDirectory'))
     onError()
     return
   }
 
   if (!fileObj) {
-    message.error('文件对象为空')
+    message.error(t('files.fileObjectEmpty'))
     onError()
     return
   }
@@ -1456,7 +1453,7 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
   } catch (error: unknown) {
     uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || '上传失败'}`)
+    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
     onError()
     checkUploadComplete()
   }
@@ -1490,12 +1487,12 @@ async function fetchAuthedDirs() {
       const readableDir = dirs.find((d) => d.readable !== false)
       if (readableDir) {
         selectedRootPath.value = readableDir.path
-        addNewTab(readableDir.path, readableDir.path.split('/').filter(Boolean).pop() || '根目录')
+        addNewTab(readableDir.path, readableDir.path.split('/').filter(Boolean).pop() || t('files.rootDirectory'))
       }
     }
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || '获取权限目录失败')
+    message.error(err.message || t('files.getAuthedDirsFailed'))
   }
 }
 

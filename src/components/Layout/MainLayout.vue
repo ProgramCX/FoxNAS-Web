@@ -48,7 +48,7 @@
         </n-avatar>
         <div class="user-info">
           <span class="username">{{ username }}</span>
-          <n-tag size="tiny" type="success">已登录</n-tag>
+          <n-tag size="tiny" type="success">{{ t('auth.loggedIn') }}</n-tag>
         </div>
       </div>
     </n-layout-sider>
@@ -79,7 +79,7 @@
           <!-- 面包屑（桌面端显示） -->
           <n-breadcrumb class="hide-on-mobile">
             <n-breadcrumb-item>
-              <router-link to="/">首页</router-link>
+              <router-link to="/">{{ t('nav.home') }}</router-link>
             </n-breadcrumb-item>
             <n-breadcrumb-item v-if="currentRoute.meta?.title">
               {{ currentRoute.meta.title }}
@@ -87,6 +87,14 @@
           </n-breadcrumb>
         </div>
         <div class="header-right">
+          <!-- 语言切换 -->
+          <n-tooltip>
+            <template #trigger>
+              <LanguageSwitcher />
+            </template>
+            {{ t('header.language') }}
+          </n-tooltip>
+
           <!-- 主题切换 -->
           <n-tooltip>
             <template #trigger>
@@ -99,7 +107,7 @@
                 </template>
               </n-button>
             </template>
-            {{ isDarkMode ? '切换到亮色模式' : '切换到暗色模式' }}
+            {{ isDarkMode ? t('header.switchToLight') : t('header.switchToDark') }}
           </n-tooltip>
 
           <!-- 刷新按钮 -->
@@ -113,7 +121,7 @@
                 </template>
               </n-button>
             </template>
-            刷新页面
+            {{ t('header.refreshPage') }}
           </n-tooltip>
 
           <!-- 用户菜单 -->
@@ -156,9 +164,11 @@
 <script setup lang="ts">
 import { computed, h, onMounted, ref, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { NIcon } from 'naive-ui'
 import { useAuthStore } from '@/stores/auth'
 import { useSettingsStore } from '@/stores/settings'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import {
   HomeOutline,
   FolderOutline,
@@ -175,6 +185,7 @@ import {
   MenuOutline,
 } from '@vicons/ionicons5'
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
@@ -187,7 +198,7 @@ const sidebarCollapsed = computed(() => settingsStore.sidebarCollapsed)
 const isDarkMode = computed(() => settingsStore.currentTheme.darkMode)
 
 // 用户名
-const username = computed(() => authStore.username || '用户')
+const username = computed(() => authStore.username || t('common.user'))
 
 // 当前激活的菜单key
 const activeKey = computed(() => {
@@ -213,51 +224,51 @@ function renderIcon(icon: any) {
 /**
  * 菜单选项
  */
-const menuOptions = [
+const menuOptions = computed(() => [
   {
-    label: '概览',
+    label: t('nav.dashboard'),
     key: 'Dashboard',
     icon: renderIcon(HomeOutline),
   },
   {
-    label: '文件管理',
+    label: t('nav.files'),
     key: 'files',
     icon: renderIcon(FolderOutline),
   },
   {
-    label: '用户管理',
+    label: t('nav.users'),
     key: 'users',
     icon: renderIcon(PeopleOutline),
     show: username.value !== 'admin', // 管理员才显示
   },
   {
-    label: 'DDNS管理',
+    label: t('nav.ddns'),
     key: 'ddns',
     icon: renderIcon(CloudOutline),
   },
   {
-    label: '系统信息',
+    label: t('dashboard.systemInfo'),
     key: 'info',
     icon: renderIcon(HardwareChipOutline),
   },
   {
-    label: '个人设置',
+    label: t('nav.settings'),
     key: 'settings',
     icon: renderIcon(SettingsOutline),
   },
-]
+])
 
 /**
  * 用户菜单选项
  */
-const userMenuOptions = [
+const userMenuOptions = computed(() => [
   {
-    label: '个人设置',
+    label: t('nav.settings'),
     key: 'settings',
     icon: renderIcon(PersonOutline),
   },
   {
-    label: '主题设置',
+    label: t('nav.theme'),
     key: 'theme',
     icon: renderIcon(ColorPaletteOutline),
   },
@@ -266,11 +277,11 @@ const userMenuOptions = [
     key: 'd1',
   },
   {
-    label: '退出登录',
+    label: t('nav.logout'),
     key: 'logout',
     icon: renderIcon(LogOutOutline),
   },
-]
+])
 
 /**
  * 切换侧边栏
@@ -334,12 +345,12 @@ const mobileMenuOpen = ref(false)
 const isMobile = ref(window.innerWidth <= 768)
 
 // 移动端底部导航项
-const mobileNavItems = [
-  { key: 'Dashboard', label: '首页', icon: HomeOutline },
-  { key: 'files', label: '文件', icon: FolderOutline },
-  { key: 'ddns', label: 'DDNS', icon: CloudOutline },
-  { key: 'settings', label: '设置', icon: SettingsOutline },
-]
+const mobileNavItems = computed(() => [
+  { key: 'Dashboard', label: t('nav.home'), icon: HomeOutline },
+  { key: 'files', label: t('nav.files'), icon: FolderOutline },
+  { key: 'ddns', label: t('nav.ddns'), icon: CloudOutline },
+  { key: 'settings', label: t('nav.settings'), icon: SettingsOutline },
+])
 
 function handleMobileNav(key: string) {
   handleMenuClick(key)
