@@ -620,8 +620,8 @@ const contextMenuOptions = computed<DropdownOption[]>(() => {
       options.push({ label: t('common.open'), key: 'open', icon: () => h(NIcon, null, { default: () => h(FolderOpenOutline) }) })
     } else {
       options.push({ label: t('common.open'), key: 'open', icon: () => h(NIcon, null, { default: () => h(OpenOutline) }) })
-      options.push({ label: t('files.download'), key: 'download', icon: () => h(NIcon, null, { default: () => h(DownloadOutline) }) })
     }
+    options.push({ label: t('files.download'), key: 'download', icon: () => h(NIcon, null, { default: () => h(DownloadOutline) }) })
     options.push({ type: 'divider', key: 'd1' })
     options.push({ label: t('files.copy'), key: 'copy', icon: () => h(NIcon, null, { default: () => h(CopyOutline) }) })
     options.push({ label: t('files.cut'), key: 'cut', icon: () => h(NIcon, null, { default: () => h(CutOutline) }) })
@@ -1003,11 +1003,14 @@ function handleContextMenuSelect(key: string) {
 
 async function downloadFile(file: FileInfo) {
   try {
-    await fileService.downloadFile(file.path, file.name)
+    if (file.type === 'directory') {
+      message.info(t('files.downloadingFolder', { name: file.name }))
+    }
+    await fileService.downloadFile(file.path, file.type === 'directory' ? `${file.name}.zip` : file.name)
     message.success(t('files.downloadSuccess'))
   } catch (error: unknown) {
     const err = error as Error
-    message.error(err.message || t('files.deleteFailed'))
+    message.error(err.message || t('files.downloadFailed'))
   }
 }
 
@@ -1127,16 +1130,17 @@ function downloadSelectedFiles() {
   const selected = getSelectedFiles()
   if (selected.length === 0) return
   
-  // 过滤出文件（不支持下载文件夹）
   const files = selected.filter(f => f.type !== 'directory')
-  if (files.length === 0) {
-    message.warning(t('files.downloadFolderWarning'))
-    return
-  }
+  const folders = selected.filter(f => f.type === 'directory')
   
   // 逐个下载文件
   files.forEach(file => {
     downloadFile(file)
+  })
+  
+  // 逐个下载文件夹
+  folders.forEach(folder => {
+    downloadFile(folder)
   })
 }
 

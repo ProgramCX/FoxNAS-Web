@@ -11,14 +11,22 @@ import type { ThemeConfig } from '@/types'
  * 可用主题列表
  */
 const AVAILABLE_THEMES: ThemeConfig[] = [
-  { name: '默认蓝', primaryColor: '#18a058', darkMode: false },
-  { name: '暗色蓝', primaryColor: '#18a058', darkMode: true },
-  { name: '紫色', primaryColor: '#9c27b0', darkMode: false },
-  { name: '暗色紫', primaryColor: '#9c27b0', darkMode: true },
-  { name: '橙色', primaryColor: '#ff9800', darkMode: false },
-  { name: '暗色橙', primaryColor: '#ff9800', darkMode: true },
-  { name: '红色', primaryColor: '#f44336', darkMode: false },
-  { name: '暗色红', primaryColor: '#f44336', darkMode: true },
+  { name: '薄荷绿', primaryColor: '#18a058', darkMode: false, gradient: 'linear-gradient(135deg, #18a058 0%, #36ad6a 100%)', bgColor: '#f0f9f4' },
+  { name: '暗夜绿', primaryColor: '#18a058', darkMode: true, gradient: 'linear-gradient(135deg, #18a058 0%, #36ad6a 100%)', bgColor: '#1a1f25' },
+  { name: '海洋蓝', primaryColor: '#2080f0', darkMode: false, gradient: 'linear-gradient(135deg, #2080f0 0%, #4096ff 100%)', bgColor: '#f0f7ff' },
+  { name: '暗夜蓝', primaryColor: '#2080f0', darkMode: true, gradient: 'linear-gradient(135deg, #2080f0 0%, #4096ff 100%)', bgColor: '#1a1f25' },
+  { name: '紫罗兰', primaryColor: '#9c27b0', darkMode: false, gradient: 'linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%)', bgColor: '#f8f0fc' },
+  { name: '暗夜紫', primaryColor: '#9c27b0', darkMode: true, gradient: 'linear-gradient(135deg, #9c27b0 0%, #ba68c8 100%)', bgColor: '#1a1f25' },
+  { name: '日落橙', primaryColor: '#ff9800', darkMode: false, gradient: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', bgColor: '#fff8f0' },
+  { name: '暗夜橙', primaryColor: '#ff9800', darkMode: true, gradient: 'linear-gradient(135deg, #ff9800 0%, #ffb74d 100%)', bgColor: '#1a1f25' },
+  { name: '珊瑚红', primaryColor: '#f44336', darkMode: false, gradient: 'linear-gradient(135deg, #f44336 0%, #ef5350 100%)', bgColor: '#fff5f5' },
+  { name: '暗夜红', primaryColor: '#f44336', darkMode: true, gradient: 'linear-gradient(135deg, #f44336 0%, #ef5350 100%)', bgColor: '#1a1f25' },
+  { name: '极光青', primaryColor: '#00bcd4', darkMode: false, gradient: 'linear-gradient(135deg, #00bcd4 0%, #26c6da 100%)', bgColor: '#f0fcff' },
+  { name: '暗夜青', primaryColor: '#00bcd4', darkMode: true, gradient: 'linear-gradient(135deg, #00bcd4 0%, #26c6da 100%)', bgColor: '#1a1f25' },
+  { name: '樱花粉', primaryColor: '#e91e63', darkMode: false, gradient: 'linear-gradient(135deg, #e91e63 0%, #ec407a 100%)', bgColor: '#fce4ec' },
+  { name: '暗夜粉', primaryColor: '#e91e63', darkMode: true, gradient: 'linear-gradient(135deg, #e91e63 0%, #ec407a 100%)', bgColor: '#1a1f25' },
+  { name: '琥珀金', primaryColor: '#ff8f00', darkMode: false, gradient: 'linear-gradient(135deg, #ff8f00 0%, #ffa726 100%)', bgColor: '#fff8e1' },
+  { name: '暗夜金', primaryColor: '#ff8f00', darkMode: true, gradient: 'linear-gradient(135deg, #ff8f00 0%, #ffa726 100%)', bgColor: '#1a1f25' },
 ]
 
 /**
@@ -31,7 +39,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const compactMode = ref<boolean>(JSON.parse(localStorage.getItem('foxnas_compact_mode') || 'false'))
 
   // Getters
-  const currentTheme = ref<ThemeConfig>(AVAILABLE_THEMES[currentThemeIndex.value])
+  const currentTheme = ref<ThemeConfig>(AVAILABLE_THEMES[currentThemeIndex.value] || AVAILABLE_THEMES[0])
 
   // Watch theme changes
   watch(currentThemeIndex, (newIndex) => {

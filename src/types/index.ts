@@ -19,13 +19,17 @@ export interface ApiResponse<T = unknown> {
 export interface PageResponse<T> {
   list?: T[]
   records?: T[]
+  content?: T[]
   total: number
+  totalElements?: number
   from: number
   to: number
   page: number
+  pageNumber?: number
   size: number
   pageSize?: number
-  totalPage: number
+  totalPage?: number
+  totalPages?: number
 }
 
 /**
@@ -62,7 +66,7 @@ export interface UserResource {
   resourceId?: number
   ownerUuid: string
   folderName: string
-  permissionType: string
+  types: string[]
 }
 
 /**
@@ -215,6 +219,8 @@ export interface ThemeConfig {
   name: string
   primaryColor: string
   darkMode: boolean
+  gradient?: string
+  bgColor?: string
 }
 
 /**
@@ -224,4 +230,34 @@ export interface UploadOptions {
   file: File
   path: string
   onProgress?: (progress: number) => void
+}
+
+/**
+ * 错误日志类型
+ */
+export interface ErrorLog {
+  id: string
+  userName: string
+  moduleName: string
+  errorMessage: string
+  stackTrace: string
+  uri: string
+  method: string
+  params: string
+  ipAddress: string
+  createdTime: string
+  exceptionType: string
+}
+
+/**
+ * 日志查询参数
+ */
+export interface LogQueryParams {
+  page?: number
+  size?: number
+  moduleName?: string
+  userName?: string
+  exceptionType?: string
+  startTime?: string
+  endTime?: string
 }

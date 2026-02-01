@@ -183,6 +183,7 @@ import {
   PersonOutline,
   ColorPaletteOutline,
   MenuOutline,
+  DocumentTextOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -200,6 +201,15 @@ const isDarkMode = computed(() => settingsStore.currentTheme.darkMode)
 // 用户名
 const username = computed(() => authStore.username || t('common.user'))
 
+// 用户权限
+const userPermissions = computed(() => authStore.userPermissions || [])
+
+// 检查用户是否有指定权限（不区分大小写）
+function hasPermission(permission: string): boolean {
+  const normalizedPermission = permission.toUpperCase()
+  return userPermissions.value.some(p => p.toUpperCase() === normalizedPermission)
+}
+
 // 当前激活的菜单key
 const activeKey = computed(() => {
   const name = route.name as string
@@ -208,6 +218,7 @@ const activeKey = computed(() => {
   if (path.startsWith('/users')) return 'users'
   if (path.startsWith('/ddns')) return 'ddns'
   if (path.startsWith('/settings')) return 'settings'
+  if (path.startsWith('/logs')) return 'logs'
   return name
 })
 
@@ -234,17 +245,24 @@ const menuOptions = computed(() => [
     label: t('nav.files'),
     key: 'files',
     icon: renderIcon(FolderOutline),
+    show: hasPermission('FILE'),
   },
   {
     label: t('nav.users'),
     key: 'users',
     icon: renderIcon(PeopleOutline),
-    show: username.value !== 'admin', // 管理员才显示
+    show: hasPermission('USER'),
   },
   {
     label: t('nav.ddns'),
     key: 'ddns',
     icon: renderIcon(CloudOutline),
+    show: hasPermission('DDNS'),
+  },
+  {
+    label: t('nav.logs'),
+    key: 'logs',
+    icon: renderIcon(DocumentTextOutline),
   },
   {
     label: t('dashboard.systemInfo'),
@@ -256,7 +274,7 @@ const menuOptions = computed(() => [
     key: 'settings',
     icon: renderIcon(SettingsOutline),
   },
-])
+].filter(item => item.show !== false))
 
 /**
  * 用户菜单选项
@@ -319,6 +337,8 @@ function handleMenuClick(key: string) {
     router.push('/users')
   } else if (key === 'ddns') {
     router.push('/ddns')
+  } else if (key === 'logs') {
+    router.push('/logs')
   } else if (key === 'info') {
     router.push('/')
   } else if (key === 'settings') {
@@ -347,10 +367,10 @@ const isMobile = ref(window.innerWidth <= 768)
 // 移动端底部导航项
 const mobileNavItems = computed(() => [
   { key: 'Dashboard', label: t('nav.home'), icon: HomeOutline },
-  { key: 'files', label: t('nav.files'), icon: FolderOutline },
-  { key: 'ddns', label: t('nav.ddns'), icon: CloudOutline },
+  { key: 'files', label: t('nav.files'), icon: FolderOutline, permission: 'FILE' },
+  { key: 'ddns', label: t('nav.ddns'), icon: CloudOutline, permission: 'DDNS' },
   { key: 'settings', label: t('nav.settings'), icon: SettingsOutline },
-])
+].filter(item => !item.permission || hasPermission(item.permission)))
 
 function handleMobileNav(key: string) {
   handleMenuClick(key)

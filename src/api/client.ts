@@ -4,7 +4,7 @@
  */
 
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios'
-import { apiConfig, apiEndpoints } from './config'
+import { apiConfig } from './config'
 import { useAuthStore } from '@/stores/auth'
 
 /**

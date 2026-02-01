@@ -22,7 +22,7 @@
             :pagination="taskPagination"
             :bordered="true"
             :loading="loading"
-            :row-key="(row) => row.id || 'new'"
+            :row-key="(row: any) => row.id || 'new'"
             :remote="true"
             :single-line="false"
             @update:checked-row-keys="handleTaskRowCheck"
@@ -64,7 +64,7 @@
             :pagination="secretPagination"
             :bordered="true"
             :loading="secretLoading"
-            :row-key="(row) => row.id"
+            :row-key="(row: any) => row.id"
             :single-line="false"
             @update:checked-row-keys="handleSecretRowCheck"
           />
@@ -358,6 +358,11 @@ const taskPagination = computed(() => ({
   showSizePicker: true,
   pageSizes: [10, 30, 50, 100],
   itemCount: taskTotalCount.value,
+  'onUpdate:pageSize': (size: number) => {
+    taskPageSize.value = size
+    taskPage.value = 1
+    fetchTasks(1)
+  },
 }))
 
 // 处理任务行选择
@@ -647,6 +652,11 @@ const secretPagination = computed(() => ({
   showSizePicker: true,
   pageSizes: [10, 30, 50, 100],
   itemCount: secretTotalCount.value,
+  'onUpdate:pageSize': (size: number) => {
+    secretPageSize.value = size
+    secretPage.value = 1
+    fetchSecrets(1)
+  },
 }))
 
 // 处理密钥行选择

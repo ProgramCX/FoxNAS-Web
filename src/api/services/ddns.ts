@@ -5,7 +5,7 @@
 
 import { http } from '../client'
 import { apiEndpoints } from '../config'
-import type { DnsProvider, AccessSecret, PageResponse, DDNSTask, DDNSTaskStatus } from '@/types'
+import type { DnsProvider, AccessSecret, PageResponse, DDNSTask } from '@/types'
 
 /**
  * DDNS 配置服务类

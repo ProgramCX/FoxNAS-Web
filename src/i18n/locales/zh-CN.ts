@@ -82,10 +82,17 @@ export default {
     files: '文件管理',
     users: '用户管理',
     ddns: 'DDNS配置',
+    logs: '日志管理',
     settings: '设置',
     logout: '退出登录',
     profile: '个人资料',
     theme: '主题',
+  },
+
+  // 主题
+  theme: {
+    light: '浅色',
+    dark: '深色',
   },
 
   // 登录页面
@@ -120,6 +127,52 @@ export default {
     sendVerifyCodeFailed: '发送验证码失败',
     initFailed: '初始化失败',
     registerSuccess: '注册成功，请登录',
+    forgotUsername: '忘记用户名',
+  },
+
+  // 忘记密码页面
+  forgotPassword: {
+    title: '找回密码',
+    subtitle: '通过邮箱验证码重置密码',
+    email: '邮箱地址',
+    emailPlaceholder: '请输入注册邮箱',
+    verifyCode: '验证码',
+    verifyCodePlaceholder: '请输入6位验证码',
+    newPassword: '新密码',
+    newPasswordPlaceholder: '请输入新密码（至少6位）',
+    confirmPassword: '确认密码',
+    confirmPasswordPlaceholder: '请再次输入新密码',
+    sendCode: '发送验证码',
+    resetPassword: '重置密码',
+    codeSent: '验证码已发送，请查收邮箱',
+    sendCodeFailed: '验证码发送失败',
+    resetSuccess: '密码重置成功，请使用新密码登录',
+    resetFailed: '密码重置失败',
+    backToLogin: '返回登录',
+    resendCode: '重新发送',
+    resendCountdown: '重新发送({seconds}秒)',
+    rateLimit: '请求过于频繁，请稍后再试',
+  },
+
+  // 找回用户名页面
+  retrieveUsername: {
+    title: '找回用户名',
+    subtitle: '通过邮箱验证码找回用户名',
+    email: '邮箱地址',
+    emailPlaceholder: '请输入注册邮箱',
+    verifyCode: '验证码',
+    verifyCodePlaceholder: '请输入6位验证码',
+    sendCode: '发送验证码',
+    submit: '提交',
+    codeSent: '验证码已发送，请查收邮箱',
+    sendCodeFailed: '验证码发送失败',
+    success: '用户名已发送到您的邮箱',
+    successMessage: '用户名已发送到您的邮箱，请查收',
+    failed: '找回用户名失败',
+    backToLogin: '返回登录',
+    resendCode: '重新发送',
+    resendCountdown: '重新发送({seconds}秒)',
+    rateLimit: '请求过于频繁，请稍后再试',
   },
 
   // 控制台/仪表盘
@@ -240,6 +293,9 @@ export default {
     create: '创建',
     getFileListFailed: '获取文件列表失败',
     folderEmpty: '该文件夹为空',
+    downloadSuccess: '下载成功',
+    downloadFailed: '下载失败',
+    downloadingFolder: '正在打包下载文件夹 "{name}"...',
   },
 
   // 用户管理
@@ -355,6 +411,7 @@ export default {
     addAccessKey: '新增DDNS密钥记录',
     editAccessKey: '编辑访问密钥',
     deleteAccessKey: '删除访问密钥',
+    addSecret: '新增密钥',
     tasks: 'DDNS任务',
     addTask: '新增DDNS任务记录',
     editTask: '编辑任务',
@@ -428,6 +485,26 @@ export default {
     enterSecretKey: '请输入Secret Key',
     enterKeyName: '请输入名称',
     enterKeyDescription: '请输入描述',
+    secretId: '密钥ID',
+    secretName: '名称',
+    secretDescription: '描述',
+    placeholder: {
+      taskName: '请输入任务名称',
+      taskDescription: '请输入任务描述',
+      ipAddress: '请输入IP地址，留空则自动获取公网IP',
+      domainRr: '如: www (为空则使用@)',
+      mainDomain: '请输入主域名，如: example.com',
+      selectAccessKey: '请选择访问密钥',
+      accessKey: '请输入Access Key',
+      secretKey: '请输入Secret Key',
+      name: '请输入名称',
+      description: '请输入描述',
+      selectDnsProvider: '请选择DNS服务商',
+    },
+    message: {
+      selectTaskToDelete: '请选择要删除的任务',
+      selectSecretToDelete: '请选择要删除的密钥',
+    },
   },
 
   // 设置页面
@@ -441,21 +518,13 @@ export default {
     selectTheme: '选择主题',
     selectLanguage: '选择语言',
     changePassword: '修改密码',
+    oldPassword: '旧密码',
+    enterOldPassword: '请输入旧密码',
     currentPassword: '当前密码',
     newPassword: '新密码',
     confirmPassword: '确认密码',
     passwordChanged: '密码修改成功',
     passwordChangeFailed: '密码修改失败',
-    themes: {
-      defaultGreen: '默认绿',
-      darkGreen: '暗色绿',
-      purple: '紫色',
-      darkPurple: '暗色紫',
-      orange: '橙色',
-      darkOrange: '暗色橙',
-      red: '红色',
-      darkRed: '暗色红',
-    },
   },
 
   // 媒体播放器
@@ -559,5 +628,33 @@ export default {
   auth: {
     loggedIn: '已登录',
     notLoggedIn: '未登录',
+  },
+
+  // 日志管理
+  logManagement: {
+    title: '错误日志',
+    subtitle: '查看和管理系统错误日志',
+    moduleName: '模块名称',
+    moduleNamePlaceholder: '请输入模块名称',
+    userName: '用户名',
+    userNamePlaceholder: '请输入用户名',
+    exceptionType: '异常类型',
+    exceptionTypePlaceholder: '请输入异常类型',
+    timeRange: '时间范围',
+    clearLogs: '清理日志',
+    clearLogsConfirm: '确定要删除该时间之前的所有日志吗？',
+    selectTime: '请选择时间',
+    clearSuccess: '日志清理成功',
+    clearFailed: '日志清理失败',
+    fetchFailed: '获取日志列表失败',
+    fetchDetailFailed: '获取日志详情失败',
+    detailTitle: '日志详情',
+    id: '日志ID',
+    errorMessage: '错误信息',
+    uri: '请求地址',
+    ipAddress: 'IP地址',
+    createdTime: '创建时间',
+    params: '请求参数',
+    stackTrace: '堆栈跟踪',
   },
 }

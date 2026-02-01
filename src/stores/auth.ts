@@ -8,8 +8,9 @@ import { ref, computed } from 'vue'
 import { apiConfig } from '@/api/config'
 import { http } from '@/api/client'
 import { apiEndpoints } from '@/api/config'
-import type { User } from '@/types'
-import { useRouter } from 'vue-router'
+import type { User, UserPermission } from '@/types'
+
+const USERNAME_KEY = 'foxnas_username'
 
 /**
  * 认证 Store
@@ -18,12 +19,14 @@ export const useAuthStore = defineStore('auth', () => {
   // State
   const token = ref<string | null>(localStorage.getItem(apiConfig.tokenKey))
   const userInfo = ref<User | null>(null)
+  const permissions = ref<string[]>([])
   const isInitialized = ref(false)
 
   // Getters
   const isLoggedIn = computed(() => !!token.value)
   const username = computed(() => userInfo.value?.userName || '')
   const userUuid = computed(() => userInfo.value?.id || '')
+  const userPermissions = computed(() => permissions.value)
 
   // Actions
 
@@ -32,8 +35,8 @@ export const useAuthStore = defineStore('auth', () => {
    * @param username 用户名
    * @param password 密码
    */
-  async function login(username: string, password: string): Promise<void> {
-    const response = await http.post<{ accessToken: string; refreshToken: string }>(apiEndpoints.auth.login, { username, password })
+  async function login(loginUsername: string, password: string): Promise<void> {
+    const response = await http.post<{ accessToken: string; refreshToken: string }>(apiEndpoints.auth.login, { username: loginUsername, password })
     
     if (response && response.accessToken) {
       token.value = response.accessToken
@@ -43,8 +46,19 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken)
       }
       
+      // 保存用户名到 store
+      userInfo.value = {
+        id: '',
+        userName: loginUsername,
+        state: 'enabled'
+      }
+      // 保存用户名到 localStorage（用于恢复会话时）
+      localStorage.setItem(USERNAME_KEY, loginUsername)
+      
       // 获取用户信息
       await fetchUserInfo()
+      // 获取用户权限
+      await fetchPermissions()
     }
   }
 
@@ -54,8 +68,8 @@ export const useAuthStore = defineStore('auth', () => {
    * @param password 密码
    * @param code 验证码
    */
-  async function register(username: string, password: string, code: string): Promise<string> {
-    return await http.post<string>(apiEndpoints.auth.register, { username, password, code })
+  async function register(username: string,emailAddr: string, password: string, code: string): Promise<string> {
+    return await http.post<string>(apiEndpoints.auth.register, { username, emailAddr, password, code })
   }
 
   /**
@@ -82,9 +96,10 @@ export const useAuthStore = defineStore('auth', () => {
       // 从 token 中解析用户 UUID (sub 字段现在是 UUID)
       const payload = parseJwtPayload(token.value || '')
       if (payload?.sub) {
+        // 只更新 id（UUID），保留已有的用户名
         userInfo.value = { 
-          id: payload.sub, 
-          userName: payload.sub, // 临时使用 UUID，实际应该根据 UUID 获取用户名
+          ...userInfo.value,
+          id: String(payload.sub),
           state: 'enabled' 
         }
       }
@@ -94,14 +109,36 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 获取当前用户权限列表
+   */
+  async function fetchPermissions(): Promise<void> {
+    try {
+      const currentUuid = userUuid.value
+      if (!currentUuid) return
+
+      const response = await http.get<UserPermission[]>(apiEndpoints.user.permissions, {
+        uuid: currentUuid
+      })
+
+      if (response && Array.isArray(response)) {
+        permissions.value = response.map((p) => p.areaName)
+      }
+    } catch {
+      permissions.value = []
+    }
+  }
+
+  /**
    * 登出
    */
   function logout(): void {
     token.value = null
     userInfo.value = null
+    permissions.value = []
     localStorage.removeItem(apiConfig.tokenKey)
     localStorage.removeItem(apiConfig.refreshTokenKey)
     localStorage.removeItem(apiConfig.authKey)
+    localStorage.removeItem(USERNAME_KEY)
   }
 
   /**
@@ -130,11 +167,21 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function initialize(): Promise<void> {
     if (isInitialized.value) return
-    
+
     const storedToken = localStorage.getItem(apiConfig.tokenKey)
+    const storedUsername = localStorage.getItem(USERNAME_KEY)
     if (storedToken) {
       token.value = storedToken
+      // 恢复用户名（如果有）
+      if (storedUsername) {
+        userInfo.value = {
+          id: '',
+          userName: storedUsername,
+          state: 'enabled'
+        }
+      }
       await fetchUserInfo()
+      await fetchPermissions()
     }
     isInitialized.value = true
   }
@@ -143,17 +190,20 @@ export const useAuthStore = defineStore('auth', () => {
     // State
     token,
     userInfo,
+    permissions,
     isInitialized,
     // Getters
     isLoggedIn,
     username,
     userUuid,
+    userPermissions,
     // Actions
     login,
     register,
     sendVerifyCode,
     initAdmin,
     fetchUserInfo,
+    fetchPermissions,
     logout,
     initialize,
   }

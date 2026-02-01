@@ -17,6 +17,18 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: false, title: '登录' },
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/ForgotPasswordView.vue'),
+    meta: { requiresAuth: false, title: '找回密码' },
+  },
+  {
+    path: '/retrieve-username',
+    name: 'RetrieveUsername',
+    component: () => import('@/views/RetrieveUsernameView.vue'),
+    meta: { requiresAuth: false, title: '找回用户名' },
+  },
+  {
     path: '/',
     component: () => import('@/components/Layout/MainLayout.vue'),
     meta: { requiresAuth: true },
@@ -63,6 +75,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/MediaPlayerView.vue'),
         meta: { title: '媒体播放' },
       },
+      {
+        path: 'logs',
+        name: 'LogManagement',
+        component: () => import('@/views/LogManagementView.vue'),
+        meta: { title: '日志管理' },
+      },
     ],
   },
   {
@@ -84,7 +102,7 @@ const router = createRouter({
 /**
  * 导航守卫 - 路由守卫
  */
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   // 更新页面标题
   document.title = to.meta.title ? `${to.meta.title} - FoxNAS` : 'FoxNAS'
 

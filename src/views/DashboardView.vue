@@ -119,7 +119,7 @@
               <div class="memory-list">
                 <div class="memory-item" v-for="(mem, index) in hardwareData.memoryList" :key="index">
                   <div class="info-row">
-                    <span class="info-label">{{ t('dashboard.slot') }} {{ index + 1 }}:</span>
+                    <span class="info-label">{{ t('dashboard.slot') }} {{ (index as number) + 1 }}:</span>
                     <span class="info-value">{{ mem.vendor }} {{ mem.model }} {{ mem.sizeGb }}GB</span>
                   </div>
                 </div>
@@ -154,7 +154,7 @@
               <div class="gpu-list">
                 <div class="gpu-item" v-for="(gpu, index) in hardwareData.gpuList" :key="index">
                   <div class="info-row">
-                    <span class="info-label">{{ index + 1 }}.</span>
+                    <span class="info-label">{{ (index as number) + 1 }}.</span>
                     <span class="info-value">{{ gpu.model }}</span>
                   </div>
                 </div>
@@ -243,7 +243,7 @@ import {
 const router = useRouter()
 const message = useMessage()
 const authStore = useAuthStore()
-const { t, locale } = useI18n()
+const { t } = useI18n()
 
 // 状态
 const hardwareInfo = ref<HardwareInfoDTO | null>(null)
@@ -279,18 +279,6 @@ const networkDownloadQueue = ref<number[]>([])
 let websocket: WebSocket | null = null
 let reconnectAttempts = 0
 const maxReconnectAttempts = 10
-
-// 获取新格式的硬件数据
-interface HardwareData {
-  operatingSystem?: string
-  cpuModel?: string
-  cpuVendor?: string
-  mainBoardModel?: string
-  mainBoardVendor?: string
-  memoryList?: Array<{ vendor?: string; model?: string; sizeGb: number }>
-  diskList?: Array<{ model?: string; vendorOrSerial?: string; sizeGb: number }>
-  gpuList?: Array<{ model?: string; vendor?: string }>
-}
 
 // 计算属性
 const isAdmin = computed(() => authStore.username === 'admin')
@@ -442,9 +430,15 @@ function updateCharts() {
  * 连接 WebSocket
  */
 function connectWebSocket() {
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8848'
+  // 如果配置了 WebSocket URL，使用配置的 URL
+  // 否则根据当前页面协议自动判断：https -> wss, http -> ws
+  let wsBaseUrl = import.meta.env.VITE_WS_BASE_URL
+  if (!wsBaseUrl) {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+    wsBaseUrl = `${protocol}//${window.location.host}`
+  }
   const token = localStorage.getItem('foxnas_token')
-  const wsUrl = `${apiBaseUrl.replace('http', 'ws')}/ws/overview?token=${token}`
+  const wsUrl = `${wsBaseUrl}/ws/overview?token=${token}`
 
   try {
     websocket = new WebSocket(wsUrl)
@@ -595,7 +589,7 @@ function getUnitAndValue(bytes: number): { value: number; unit: string } {
   const i = Math.min(Math.floor(Math.log(bytes) / Math.log(k)), units.length - 1)
   return {
     value: bytes / Math.pow(k, i),
-    unit: units[i],
+    unit: units[i] || 'TB',
   }
 }
 

@@ -4,14 +4,16 @@
  */
 
 // 后端服务器地址
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8848'
+// 开发环境: http://localhost:8848
+// 生产环境: 空字符串（使用相对路径）
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api'
 
 /**
  * API 基础配置
  */
 export const apiConfig = {
-  baseURL: `${API_BASE_URL}${API_PREFIX}`,
+  baseURL: API_BASE_URL ? `${API_BASE_URL}${API_PREFIX}` : API_PREFIX,
   timeout: 30000,
   // Access Token 存储的 key
   tokenKey: 'foxnas_token',
@@ -33,6 +35,8 @@ export const apiEndpoints = {
     sendVerifyCode: '/auth/sendVerifyCode',
     register: '/auth/reg',
     refresh: '/auth/refresh',
+    resetPassword: '/auth/password/reset',
+    retrieveUsername: '/auth/username/retrieve',
   },
   // 文件信息
   file: {
@@ -115,6 +119,16 @@ export const apiEndpoints = {
       restart: '/ddns/tasks/restart',
       status: '/ddns/tasks/status',
     },
+  },
+  // 公共接口
+  common: {
+    permissions: '/common/permissions',
+  },
+  // 日志管理
+  log: {
+    list: '/log/error',
+    detail: '/log/error',
+    deleteBefore: '/log/error/before',
   },
 }
 

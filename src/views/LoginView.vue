@@ -118,6 +118,17 @@
             {{ isRegisterMode ? t('login.hasAccount') : t('login.noAccount') }}
           </n-button>
         </div>
+
+        <!-- 忘记密码/找回用户名 -->
+        <div v-if="!isRegisterMode" class="auth-links">
+          <n-button text @click="goToForgotPassword">
+            {{ t('login.forgotPassword') }}
+          </n-button>
+          <span class="divider">|</span>
+          <n-button text @click="goToRetrieveUsername">
+            {{ t('login.forgotUsername') }}
+          </n-button>
+        </div>
       </n-form>
 
       <!-- 初始化管理员提示 -->
@@ -261,6 +272,16 @@ async function initAdmin() {
   }
 }
 
+// 跳转到忘记密码页面
+function goToForgotPassword() {
+  router.push('/forgot-password')
+}
+
+// 跳转到找回用户名页面
+function goToRetrieveUsername() {
+  router.push('/retrieve-username')
+}
+
 // 处理登录
 async function handleLogin() {
   // 验证表单
@@ -276,7 +297,7 @@ async function handleLogin() {
   try {
     if (isRegisterMode.value) {
       // 注册
-      await authStore.register(formData.username, formData.password, formData.code)
+      await authStore.register(formData.username, formData.email, formData.password, formData.code)
       message.success(t('login.registerSuccess'))
       isRegisterMode.value = false
       formData.password = ''
@@ -290,8 +311,9 @@ async function handleLogin() {
       router.push(redirect || '/')
     }
   } catch (error: unknown) {
-    const err = error as Error
-    errorMessage.value = err.message || t('common.operationFailed')
+    const err = error as { message?: string; status?: number }
+    errorMessage.value = t('login.loginFailed')
+    showInitAdmin.value = false
 
     // 检查是否需要初始化管理员
     if (err.message?.includes('admin') || err.message?.includes('Admin')) {
@@ -374,6 +396,18 @@ onMounted(async () => {
 .toggle-mode {
   text-align: center;
   margin-top: -8px;
+}
+
+.auth-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.auth-links .divider {
+  color: var(--text-color-quaternary);
 }
 
 .init-admin-section {

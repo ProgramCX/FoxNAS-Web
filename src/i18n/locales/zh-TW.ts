@@ -75,17 +75,24 @@ export default {
     techStack: '基於 Vue 3 + TypeScript + Naive UI 構建',
   },
 
-  // 導航選單
+  // 導航菜單
   nav: {
     home: '首頁',
     dashboard: '控制台',
-    files: '檔案管理',
-    users: '使用者管理',
+    files: '文件管理',
+    users: '用戶管理',
     ddns: 'DDNS配置',
-    settings: '設定',
-    logout: '登出',
+    logs: '日誌管理',
+    settings: '設置',
+    logout: '退出登錄',
     profile: '個人資料',
     theme: '主題',
+  },
+
+  // 主題
+  theme: {
+    light: '淺色',
+    dark: '深色',
   },
 
   // 登入頁面
@@ -120,6 +127,52 @@ export default {
     sendVerifyCodeFailed: '發送驗證碼失敗',
     initFailed: '初始化失敗',
     registerSuccess: '註冊成功，請登入',
+    forgotUsername: '忘記用戶名',
+  },
+
+  // 忘記密碼頁面
+  forgotPassword: {
+    title: '找回密碼',
+    subtitle: '通過郵箱驗證碼重置密碼',
+    email: '郵箱地址',
+    emailPlaceholder: '請輸入註冊郵箱',
+    verifyCode: '驗證碼',
+    verifyCodePlaceholder: '請輸入6位驗證碼',
+    newPassword: '新密碼',
+    newPasswordPlaceholder: '請輸入新密碼（至少6位）',
+    confirmPassword: '確認密碼',
+    confirmPasswordPlaceholder: '請再次輸入新密碼',
+    sendCode: '發送驗證碼',
+    resetPassword: '重置密碼',
+    codeSent: '驗證碼已發送，請查收郵箱',
+    sendCodeFailed: '驗證碼發送失敗',
+    resetSuccess: '密碼重置成功，請使用新密碼登入',
+    resetFailed: '密碼重置失敗',
+    backToLogin: '返回登入',
+    resendCode: '重新發送',
+    resendCountdown: '重新發送({seconds}秒)',
+    rateLimit: '請求過於頻繁，請稍後再試',
+  },
+
+  // 找回用戶名頁面
+  retrieveUsername: {
+    title: '找回用戶名',
+    subtitle: '通過郵箱驗證碼找回用戶名',
+    email: '郵箱地址',
+    emailPlaceholder: '請輸入註冊郵箱',
+    verifyCode: '驗證碼',
+    verifyCodePlaceholder: '請輸入6位驗證碼',
+    sendCode: '發送驗證碼',
+    submit: '提交',
+    codeSent: '驗證碼已發送，請查收郵箱',
+    sendCodeFailed: '驗證碼發送失敗',
+    success: '用戶名已發送到您的郵箱',
+    successMessage: '用戶名已發送到您的郵箱，請查收',
+    failed: '找回用戶名失敗',
+    backToLogin: '返回登入',
+    resendCode: '重新發送',
+    resendCountdown: '重新發送({seconds}秒)',
+    rateLimit: '請求過於頻繁，請稍後再試',
   },
 
   // 控制台/儀表板
@@ -295,6 +348,7 @@ export default {
     addAccessKey: '新增存取金鑰',
     editAccessKey: '編輯存取金鑰',
     deleteAccessKey: '刪除存取金鑰',
+    addSecret: '新增金鑰',
     tasks: '任務列表',
     addTask: '新增任務',
     editTask: '編輯任務',
@@ -368,6 +422,26 @@ export default {
     enterSecretKey: '請輸入金鑰Secret',
     enterKeyName: '請輸入金鑰名稱',
     enterKeyDescription: '請輸入金鑰描述',
+    secretId: '密鑰ID',
+    secretName: '名稱',
+    secretDescription: '描述',
+    placeholder: {
+      taskName: '請輸入任務名稱',
+      taskDescription: '請輸入任務描述',
+      ipAddress: '請輸入IP地址，留空則自動獲取公網IP',
+      domainRr: '如: www (為空則使用@)',
+      mainDomain: '請輸入主域名，如: example.com',
+      selectAccessKey: '請選擇訪問密鑰',
+      accessKey: '請輸入Access Key',
+      secretKey: '請輸入Secret Key',
+      name: '請輸入名稱',
+      description: '請輸入描述',
+      selectDnsProvider: '請選擇DNS服務商',
+    },
+    message: {
+      selectTaskToDelete: '請選擇要刪除的任務',
+      selectSecretToDelete: '請選擇要刪除的密鑰',
+    },
   },
 
   // 設定頁面
@@ -381,6 +455,8 @@ export default {
     selectTheme: '選擇主題',
     selectLanguage: '選擇語言',
     changePassword: '修改密碼',
+    oldPassword: '舊密碼',
+    enterOldPassword: '請輸入舊密碼',
     currentPassword: '目前密碼',
     newPassword: '新密碼',
     confirmPassword: '確認密碼',
@@ -496,8 +572,36 @@ export default {
   },
 
   // 登入狀態
-  auth: {
-    loggedIn: '已登入',
-    notLoggedIn: '未登入',
+    auth: {
+      loggedIn: '已登入',
+      notLoggedIn: '未登入',
+    },
+
+  // 日誌管理
+  logManagement: {
+    title: '錯誤日誌',
+    subtitle: '查看和管理系統錯誤日誌',
+    moduleName: '模組名稱',
+    moduleNamePlaceholder: '請輸入模組名稱',
+    userName: '用戶名',
+    userNamePlaceholder: '請輸入用戶名',
+    exceptionType: '異常類型',
+    exceptionTypePlaceholder: '請輸入異常類型',
+    timeRange: '時間範圍',
+    clearLogs: '清理日誌',
+    clearLogsConfirm: '確定要刪除該時間之前的所有日誌嗎？',
+    selectTime: '請選擇時間',
+    clearSuccess: '日誌清理成功',
+    clearFailed: '日誌清理失敗',
+    fetchFailed: '獲取日誌列表失敗',
+    fetchDetailFailed: '獲取日誌詳情失敗',
+    detailTitle: '日誌詳情',
+    id: '日誌ID',
+    errorMessage: '錯誤信息',
+    uri: '請求地址',
+    ipAddress: 'IP位址',
+    createdTime: '創建時間',
+    params: '請求參數',
+    stackTrace: '堆疊追蹤',
   },
 }

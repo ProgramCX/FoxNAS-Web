@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
@@ -139,7 +139,7 @@ function navigateToPath(index: number) {
 }
 
 // 点击文件
-function handleFileClick(file: FileInfo) {
+function handleFileClick(_file: FileInfo) {
   // 选中逻辑
 }
 

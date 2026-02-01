@@ -8,6 +8,14 @@
             <n-form-item :label="t('login.username')">
               <n-input v-model:value="accountForm.username" disabled />
             </n-form-item>
+            <n-form-item :label="t('settings.oldPassword')">
+              <n-input
+                v-model:value="accountForm.oldPassword"
+                type="password"
+                :placeholder="t('settings.enterOldPassword')"
+                show-password-on="click"
+              />
+            </n-form-item>
             <n-form-item :label="t('settings.newPassword')">
               <n-input
                 v-model:value="accountForm.newPassword"
@@ -54,23 +62,49 @@
         <!-- 主题设置 -->
         <n-tab-pane name="theme" :tab="t('settings.themeSettings')">
           <div class="theme-section">
-            <h3>{{ t('settings.selectTheme') }}</h3>
+            <h3 class="section-title">{{ t('settings.selectTheme') }}</h3>
+            <div class="theme-section-header">
+              <span class="theme-mode-label" :class="{ active: !isDarkMode }">
+                <n-icon><SunnyOutline /></n-icon>
+                {{ t('theme.light') }}
+              </span>
+              <n-switch v-model:value="isDarkMode" @update:value="toggleDarkMode" />
+              <span class="theme-mode-label" :class="{ active: isDarkMode }">
+                <n-icon><MoonOutline /></n-icon>
+                {{ t('theme.dark') }}
+              </span>
+            </div>
             <div class="theme-grid">
               <div
-                v-for="(theme, index) in themes"
-                :key="index"
-                class="theme-item"
-                :class="{ active: currentThemeIndex === index }"
-                @click="selectTheme(index)"
+                v-for="theme in filteredThemes"
+                :key="theme.name"
+                class="theme-card"
+                :class="{ active: currentThemeIndex === getThemeIndex(theme) }"
+                @click="selectTheme(getThemeIndex(theme))"
               >
-                <div class="theme-preview" :style="{ backgroundColor: theme.darkMode ? '#1a1a2e' : '#f5f7fa' }">
-                  <div class="preview-sidebar" :style="{ backgroundColor: theme.primaryColor }"></div>
-                  <div class="preview-content">
-                    <div class="preview-header" :style="{ backgroundColor: theme.primaryColor }"></div>
-                    <div class="preview-body"></div>
+                <div class="theme-card-preview" :style="{ background: theme.bgColor || (theme.darkMode ? '#1a1a2e' : '#f5f7fa') }">
+                  <div class="preview-glass">
+                    <div class="preview-header-bar" :style="{ background: theme.gradient || theme.primaryColor }"></div>
+                    <div class="preview-content-area">
+                      <div class="preview-sidebar-bar" :style="{ background: theme.gradient || theme.primaryColor }"></div>
+                      <div class="preview-main-area">
+                        <div class="preview-dots">
+                          <span v-for="i in 3" :key="i" class="preview-dot" :style="{ background: theme.primaryColor + '40' }"></span>
+                        </div>
+                        <div class="preview-lines">
+                          <span v-for="i in 4" :key="i" class="preview-line" :style="{ background: theme.primaryColor + '20' }"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-if="currentThemeIndex === getThemeIndex(theme)" class="theme-check">
+                    <n-icon color="#fff" size="20"><Checkmark /></n-icon>
                   </div>
                 </div>
-                <span class="theme-name">{{ getThemeName(theme, index) }}</span>
+                <div class="theme-card-info">
+                  <span class="theme-card-name">{{ theme.name }}</span>
+                  <span class="theme-card-badge" v-if="theme.darkMode">{{ t('theme.dark') }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -80,7 +114,7 @@
         <n-tab-pane name="about" :tab="t('settings.about')">
           <div class="about-section">
             <div class="about-logo">
-              <n-icon size="64" color="#18a058"><CloudOutline /></n-icon>
+              <img src="@/assets/favicon.ico" alt="App Logo" width="80" height="80" />
               <h2>{{ t('app.name') }}</h2>
               <p class="version">{{ t('app.version') }} 1.0.0</p>
             </div>
@@ -104,7 +138,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { useAuthStore } from '@/stores/auth'
 import { userSelfService } from '@/api/services/user'
 import type { ThemeConfig } from '@/types'
-import { CloudOutline } from '@vicons/ionicons5'
+import { CloudOutline, SunnyOutline, MoonOutline, Checkmark } from '@vicons/ionicons5'
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/i18n'
 
 const { t, locale } = useI18n()
@@ -115,6 +149,7 @@ const authStore = useAuthStore()
 // 账户表单
 const accountForm = ref({
   username: authStore.username || '',
+  oldPassword: '',
   newPassword: '',
   confirmPassword: '',
 })
@@ -124,6 +159,30 @@ const changing = ref(false)
 // 主题
 const themes = computed(() => settingsStore.getThemes())
 const currentThemeIndex = computed(() => settingsStore.currentThemeIndex)
+const isDarkMode = computed({
+  get: () => themes.value[currentThemeIndex.value]?.darkMode || false,
+  set: (val) => {
+    const targetTheme = themes.value.find(t => t.darkMode === val && t.primaryColor === themes.value[currentThemeIndex.value]?.primaryColor)
+    if (targetTheme) {
+      selectTheme(themes.value.indexOf(targetTheme))
+    }
+  }
+})
+
+const filteredThemes = computed(() => {
+  return themes.value.filter(theme => theme.darkMode === isDarkMode.value)
+})
+
+function getThemeIndex(theme: ThemeConfig): number {
+  return themes.value.indexOf(theme)
+}
+
+function toggleDarkMode(val: boolean) {
+  const targetTheme = themes.value.find(t => t.darkMode === val && t.primaryColor === themes.value[currentThemeIndex.value]?.primaryColor)
+  if (targetTheme) {
+    selectTheme(themes.value.indexOf(targetTheme))
+  }
+}
 
 // 当前语言
 const currentLanguage = computed(() => locale.value)
@@ -142,16 +201,6 @@ function getLanguageFlag(code: string): string {
     'ru': '🇷🇺',
   }
   return flags[code] || '🌐'
-}
-
-// 获取主题名称（国际化）
-function getThemeName(_theme: ThemeConfig, index: number): string {
-  const themeKeys = [
-    'defaultGreen', 'darkGreen', 'purple', 'darkPurple',
-    'orange', 'darkOrange', 'red', 'darkRed'
-  ]
-  const key = themeKeys[index] || 'defaultGreen'
-  return t(`settings.themes.${key}`)
 }
 
 // 选择语言
@@ -174,6 +223,10 @@ function selectTheme(index: number) {
 
 // 修改密码
 async function changePassword() {
+  if (!accountForm.value.oldPassword) {
+    message.error(t('settings.enterOldPassword'))
+    return
+  }
   if (!accountForm.value.newPassword) {
     message.error(t('login.passwordRequired'))
     return
@@ -184,8 +237,9 @@ async function changePassword() {
   }
   changing.value = true
   try {
-    await userSelfService.changePassword('', accountForm.value.newPassword)
+    await userSelfService.changePassword(accountForm.value.oldPassword, accountForm.value.newPassword)
     message.success(t('settings.passwordChanged'))
+    accountForm.value.oldPassword = ''
     accountForm.value.newPassword = ''
     accountForm.value.confirmPassword = ''
   } catch (error: unknown) {
@@ -211,6 +265,13 @@ async function changePassword() {
 .language-section h3,
 .theme-section h3 {
   margin-bottom: 16px;
+  color: var(--text-color-base);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
   color: var(--text-color-base);
 }
 
@@ -250,55 +311,164 @@ async function changePassword() {
   color: var(--text-color-base);
 }
 
+.theme-section-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background: var(--bg-color-secondary);
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.theme-mode-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--text-color-tertiary);
+  transition: color 0.3s ease;
+}
+
+.theme-mode-label.active {
+  color: var(--primary-color);
+  font-weight: 500;
+}
+
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 16px;
 }
 
-.theme-item {
+.theme-card {
+  position: relative;
   cursor: pointer;
-  padding: 8px;
-  border-radius: 8px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-color-secondary);
   border: 2px solid transparent;
   transition: all 0.3s ease;
 }
 
-.theme-item:hover {
-  background-color: var(--bg-color-secondary);
+.theme-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.theme-item.active {
+.theme-card.active {
   border-color: var(--primary-color);
-  background-color: rgba(24, 160, 88, 0.1);
+  box-shadow: 0 0 0 2px rgba(24, 160, 88, 0.2);
 }
 
-.theme-preview {
-  height: 80px;
-  border-radius: 6px;
-  display: flex;
+.theme-card-preview {
+  position: relative;
+  height: 100px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.preview-glass {
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
   overflow: hidden;
-  margin-bottom: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
 }
 
-.preview-sidebar {
-  width: 30%;
+.preview-header-bar {
+  height: 16px;
+  width: 100%;
+}
+
+.preview-content-area {
+  display: flex;
+  height: calc(100% - 16px);
+}
+
+.preview-sidebar-bar {
+  width: 24px;
   height: 100%;
 }
 
-.preview-content {
+.preview-main-area {
   flex: 1;
+  padding: 8px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
 }
 
-.preview-header {
-  height: 20%;
+.preview-dots {
+  display: flex;
+  gap: 4px;
 }
 
-.preview-body {
-  flex: 1;
-  background-color: rgba(255, 255, 255, 0.5);
+.preview-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.preview-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-line {
+  height: 8px;
+  border-radius: 4px;
+  width: 100%;
+}
+
+.theme-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: scaleIn 0.2s ease;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.theme-card-info {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border-color);
+}
+
+.theme-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-color-base);
+}
+
+.theme-card-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--primary-color);
+  color: #fff;
 }
 
 .theme-name {

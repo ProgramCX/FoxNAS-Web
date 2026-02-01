@@ -133,7 +133,7 @@
     <n-modal v-model:show="showAddDirDialog" preset="dialog" :title="editingDir ? t('users.editDir') : t('users.addDir')" style="width: 500px">
       <n-form :model="dirForm" label-placement="left" label-width="100px">
         <n-form-item :label="t('users.dirPath')" required>
-          <n-input v-model:value="dirForm.folderName" :placeholder="t('users.enterDirPath')" />
+          <DirectoryTree v-model="dirForm.folderName" />
         </n-form-item>
         <n-form-item :label="t('users.dirReadPermission')">
           <n-checkbox v-model:checked="dirForm.canRead">{{ t('users.read') }}</n-checkbox>
@@ -157,6 +157,7 @@ import { useI18n } from 'vue-i18n'
 import { userService } from '@/api/services/user'
 import type { User, UserPermission, UserResource } from '@/types'
 import { AddOutline, TrashOutline, CreateOutline, LockClosedOutline, SearchOutline, KeyOutline, FolderOutline, RefreshOutline, ShieldOutline } from '@vicons/ionicons5'
+import DirectoryTree from '@/components/DirectoryTree.vue'
 
 const message = useMessage()
 const { t } = useI18n()
@@ -320,7 +321,7 @@ const dirPermissionColumns = computed<DataTableColumns<UserResource>>(() => [
     key: 'canRead',
     width: 100,
     render: (row) => h(NCheckbox, {
-      checked: row.permissionType?.includes('read'),
+      checked: row.types?.some(t => t.toLowerCase() === 'read'),
       disabled: true,
     }),
   },
@@ -329,7 +330,7 @@ const dirPermissionColumns = computed<DataTableColumns<UserResource>>(() => [
     key: 'canWrite',
     width: 100,
     render: (row) => h(NCheckbox, {
-      checked: row.permissionType?.includes('write'),
+      checked: row.types?.some(t => t.toLowerCase() === 'write'),
       disabled: true,
     }),
   },
@@ -588,8 +589,8 @@ function editDirPermission(resource: UserResource) {
   editingDir.value = resource
   dirForm.value = {
     folderName: resource.folderName || '',
-    canRead: resource.permissionType?.includes('read') || false,
-    canWrite: resource.permissionType?.includes('write') || false,
+    canRead: resource.types?.some(t => t.toLowerCase() === 'read') || false,
+    canWrite: resource.types?.some(t => t.toLowerCase() === 'write') || false,
   }
   showAddDirDialog.value = true
 }
@@ -604,8 +605,8 @@ async function saveDirPermission() {
   savingDir.value = true
   try {
     const typeList: string[] = []
-    if (dirForm.value.canRead) typeList.push('read')
-    if (dirForm.value.canWrite) typeList.push('write')
+    if (dirForm.value.canRead) typeList.push('Read')
+    if (dirForm.value.canWrite) typeList.push('Write')
 
     if (editingDir.value) {
       // 修改现有目录权限

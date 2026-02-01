@@ -185,7 +185,7 @@ class UserService {
    * @param uuid 用户 UUID
    */
   async getUserResources(uuid: string): Promise<UserResource[]> {
-    return await http.get<UserResource[]>(apiEndpoints.user.allResources, { uuid })
+    return await http.get<{ data: UserResource[] }>(apiEndpoints.user.allResources, { uuid }).then(res => res?.data || [])
   }
 
   /**

@@ -7,6 +7,17 @@ import { http } from '../client'
 import { apiEndpoints } from '../config'
 import type { LoginRequest, RegisterRequest } from '@/types'
 
+interface ResetPasswordRequest {
+  emailAddr: string
+  code: string
+  newPassword: string
+}
+
+interface RetrieveUsernameRequest {
+  emailAddr: string
+  code: string
+}
+
 /**
  * 认证服务类
  */
@@ -39,6 +50,26 @@ class AuthService {
    */
   async sendVerifyCode(email: string): Promise<string> {
     return await http.post<string>(apiEndpoints.auth.sendVerifyCode, { emailAddr: email })
+  }
+
+  /**
+   * 重置密码
+   * POST /api/auth/password/reset
+   * @param data 重置密码信息
+   * @returns 重置结果
+   */
+  async resetPassword(data: ResetPasswordRequest): Promise<string> {
+    return await http.post<string>(apiEndpoints.auth.resetPassword, data)
+  }
+
+  /**
+   * 找回用户名
+   * POST /api/auth/username/retrieve
+   * @param data 找回用户名信息
+   * @returns 找回结果
+   */
+  async retrieveUsername(data: RetrieveUsernameRequest): Promise<string> {
+    return await http.post<string>(apiEndpoints.auth.retrieveUsername, data)
   }
 
   /**
