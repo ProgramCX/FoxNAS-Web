@@ -40,7 +40,7 @@
           />
         </n-form-item>
 
-        <n-form-item>
+        <n-form-item class = "action-buttons">
           <n-button type="primary" @click="handleSearch">
             <template #icon><n-icon><SearchOutline /></n-icon></template>
             {{ t('common.search') }}
@@ -408,5 +408,94 @@ onMounted(() => {
   .log-management-container {
     padding: 12px;
   }
+
+  .page-header {
+    margin-bottom: 16px;
+  }
+
+  .page-title {
+    font-size: 20px;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+  }
+
+  .filter-card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .filter-card :deep(.n-form) {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filter-card :deep(.n-form-item) {
+    margin-bottom: 0;
+    flex: 1;
+  }
+
+  .filter-card :deep(.n-form-item__label) {
+    padding-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .filter-card :deep(.n-date-picker) {
+    width: 100% !important;
+  }
+
+  .filter-card :deep(.n-form-item__content) {
+    width: 100%;
+  }
+
+  .filter-card :deep(.n-input),
+  .filter-card :deep(.n-select),
+  .filter-card :deep(.n-date-picker) {
+    width: 100%;
+  }
+
+  .filter-card :deep(.n-form-item__label) {
+    justify-content: flex-start;
+  }
+
+  .data-card {
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .table-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .table-wrapper {
+    margin: 0 -12px;
+    padding: 0 12px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .log-management-container {
+    padding: 8px;
+  }
+
+  .filter-card :deep(.n-form) {
+    gap: 8px;
+  }
+
+  .filter-card :deep(.n-form-item:last-child) {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .filter-card :deep(.n-button) {
+    width: 50%;
+    justify-content: center;
+  }
+
 }
 </style>

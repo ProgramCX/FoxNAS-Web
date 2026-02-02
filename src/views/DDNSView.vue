@@ -831,4 +831,55 @@ onMounted(async () => {
   padding-top: 16px;
   border-top: 1px solid var(--n-border-color);
 }
+
+/* 响应式 */
+@media screen and (max-width: 768px) {
+  .ddns-view {
+    gap: 16px;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+  
+  /* 表格响应式 */
+  .ddns-view :deep(.n-data-table) {
+    overflow-x: auto;
+  }
+  
+  .ddns-view :deep(.n-data-table-wrapper) {
+    overflow-x: auto;
+  }
+  
+  .ddns-view :deep(.n-data-table-table) {
+    min-width: 800px;
+  }
+
+  /* 移动端标签页样式 */
+  .ddns-view :deep(.n-tabs-nav) {
+    padding: 4px;
+  }
+  
+  .ddns-view :deep(.n-tab-pane) {
+    padding: 12px 0;
+  }
+
+  /* 按钮响应式 */
+  .ddns-view :deep(.n-space) {
+    flex-wrap: wrap;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .pagination-bar {
+    flex-direction: column;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .pagination-bar :deep(.n-pagination) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 </style>

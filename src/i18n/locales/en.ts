@@ -265,6 +265,7 @@ export default {
     modifiedDate: 'Modified Date',
     rootDirectory: 'Root',
     selectDirectory: 'Select Directory',
+    selectValidDirectory: 'Please select a valid target directory',
     searchFiles: 'Search files...',
     searchPlaceholder: 'Search...',
     goBack: 'Back',

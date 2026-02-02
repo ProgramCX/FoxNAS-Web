@@ -250,6 +250,7 @@ export default {
     path: 'Caminho',
     selectFiles: 'Selecionar Arquivos',
     dropFilesHere: 'Arraste arquivos aqui',
+    selectValidDirectory: 'Por favor, selecione um diretório de destino válido',
     folderName: 'Nome da Pasta',
     enterFolderName: 'Digite o nome da pasta',
     enterNewName: 'Digite o novo nome',

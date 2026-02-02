@@ -890,19 +890,87 @@ import { CheckmarkCircleOutline } from '@vicons/ionicons5'
 
 /* 响应式 */
 @media screen and (max-width: 768px) {
+  .dashboard {
+    gap: 16px;
+  }
+
   .charts-grid,
   .dashboard-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .status-cards {
     grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .status-card {
+    padding: 12px !important;
+  }
+
+  .stat-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .stat-icon :deep(.n-icon) {
+    font-size: 22px !important;
+  }
+
+  .stat-value {
+    font-size: 18px;
+  }
+
+  .stat-label {
+    font-size: 12px;
+  }
+
+  .chart-card {
+    padding: 12px !important;
+  }
+
+  .chart-container {
+    height: 140px;
+  }
+
+  :deep(.n-card-header__main) {
+    font-size: 14px;
+  }
+
+  :deep(.n-card-header-extra) {
+    margin-left: 8px;
   }
 }
 
 @media screen and (max-width: 480px) {
   .status-cards {
     grid-template-columns: 1fr;
+  }
+
+  .stat-content {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .stat-icon :deep(.n-icon) {
+    font-size: 24px !important;
+  }
+
+  .stat-value {
+    font-size: 20px;
   }
 }
 </style>

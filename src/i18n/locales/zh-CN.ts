@@ -265,6 +265,7 @@ export default {
     other: '其他',
     rootDirectory: '根目录',
     selectDirectory: '选择目录',
+    selectValidDirectory: '请选择有效的目标目录',
     searchFiles: '搜索文件...',
     searchPlaceholder: '搜索...',
     goBack: '后退',
@@ -293,9 +294,10 @@ export default {
     create: '创建',
     getFileListFailed: '获取文件列表失败',
     folderEmpty: '该文件夹为空',
-    downloadSuccess: '下载成功',
+    downloadSuccess: '{name} 下载成功',
     downloadFailed: '下载失败',
     downloadingFolder: '正在打包下载文件夹 "{name}"...',
+    downloading: '正在下载',
   },
 
   // 用户管理

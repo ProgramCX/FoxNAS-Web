@@ -250,6 +250,7 @@ export default {
     path: 'Chemin',
     selectFiles: 'Sélectionner des fichiers',
     dropFilesHere: 'Déposez les fichiers ici',
+    selectValidDirectory: 'Veuillez sélectionner un répertoire cible valide',
     folderName: 'Nom du dossier',
     enterFolderName: 'Entrez le nom du dossier',
     enterNewName: 'Entrez le nouveau nom',

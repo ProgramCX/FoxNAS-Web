@@ -36,7 +36,7 @@ const languageOptions = computed(() => {
 function getLanguageFlag(code: string): string {
   const flags: Record<string, string> = {
     'zh-CN': '🇨🇳',
-    'zh-TW': '🇹🇼',
+    'zh-TW': '🇭🇰',
     'en': '🇺🇸',
     'fr': '🇫🇷',
     'de': '🇩🇪',

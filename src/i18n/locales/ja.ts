@@ -221,6 +221,7 @@ export default {
     path: 'パス',
     selectFiles: 'ファイルを選択',
     dropFilesHere: 'ここにファイルをドロップ',
+    selectValidDirectory: '有効なターゲットディレクトリを選択してください',
     folderName: 'フォルダ名',
     enterFolderName: 'フォルダ名を入力',
     enterNewName: '新しい名前を入力',

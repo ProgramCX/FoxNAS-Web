@@ -250,6 +250,7 @@ export default {
     path: 'Pfad',
     selectFiles: 'Dateien auswählen',
     dropFilesHere: 'Dateien hier ablegen',
+    selectValidDirectory: 'Bitte wählen Sie ein gültiges Zielverzeichnis',
     folderName: 'Ordnername',
     enterFolderName: 'Ordnernamen eingeben',
     enterNewName: 'Neuen Namen eingeben',

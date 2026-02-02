@@ -250,6 +250,7 @@ export default {
     path: 'Путь',
     selectFiles: 'Выбрать файлы',
     dropFilesHere: 'Перетащите файлы сюда',
+    selectValidDirectory: 'Пожалуйста, выберите допустимую целевую директорию',
     folderName: 'Имя папки',
     enterFolderName: 'Введите имя папки',
     enterNewName: 'Введите новое имя',

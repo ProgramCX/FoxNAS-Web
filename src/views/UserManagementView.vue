@@ -682,4 +682,59 @@ onMounted(() => {
   display: flex;
   gap: 4px;
 }
+
+/* 响应式 */
+@media screen and (max-width: 768px) {
+  .user-management {
+    gap: 16px;
+  }
+
+  .user-management :deep(.n-card) {
+    padding: 12px !important;
+    border-radius: 8px;
+  }
+
+  .user-management :deep(.n-card-header) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .user-management :deep(.n-card-header__extra) {
+    width: 100%;
+    margin-left: 0 !important;
+  }
+
+  .user-management :deep(.n-space) {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .user-management :deep(.n-input) {
+    width: 100% !important;
+    max-width: none;
+  }
+
+  .user-management :deep(.n-data-table) {
+    overflow-x: auto;
+  }
+
+  .user-management :deep(.n-data-table-wrapper) {
+    overflow-x: auto;
+  }
+
+  .user-management :deep(.n-data-table-table) {
+    min-width: 900px;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .user-management :deep(.n-button) {
+    padding: 0 12px;
+  }
+
+  .user-management :deep(.n-card-header__extra) {
+    padding: 0;
+  }
+}
 </style>

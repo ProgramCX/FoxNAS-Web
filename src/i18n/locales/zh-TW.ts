@@ -247,6 +247,7 @@ export default {
     path: '路徑',
     selectFiles: '選擇檔案',
     dropFilesHere: '拖放檔案到這裡',
+    selectValidDirectory: '請選擇有效的目標目錄',
     folderName: '資料夾名稱',
     enterFolderName: '請輸入資料夾名稱',
     enterNewName: '請輸入新名稱',

@@ -442,21 +442,22 @@
         </div>
         <n-scrollbar style="max-height: 200px">
           <div class="upload-progress-list">
-            <div v-for="(item, index) in uploadProgress" :key="index" class="progress-item">
+            <div v-for="item in uploadProgress" :key="item.id || item.fullPath || item.name" class="progress-item">
               <div class="progress-file-info">
                 <n-icon size="16" class="file-icon">
                   <DocumentOutline />
                 </n-icon>
                 <span class="file-name" :title="item.fullPath || item.name">{{ item.name }}</span>
               </div>
-              <n-progress 
-                type="line" 
-                :percentage="item.percentage" 
-                :status="item.status === 'error' ? 'error' : (item.percentage >= 100 ? 'success' : 'default')"
-                :show-indicator="false"
-                :height="6"
-                :border-radius="3"
-              />
+              <div class="progress-bar-wrapper">
+                <div class="upload-progress-rail">
+                  <div
+                    class="upload-progress-fill"
+                    :style="{ width: `${Math.min(100, Math.max(0, item.percentage))}%` }"
+                  ></div>
+                </div>
+                <span class="upload-percent">{{ item.percentage }}%</span>
+              </div>
             </div>
           </div>
         </n-scrollbar>
@@ -486,10 +487,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, h, watch, nextTick } from 'vue'
-import { useMessage, useDialog, NButton, NIcon, NTag, NInput, NTooltip, NSpace, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
+import { ref, computed, onMounted, onUnmounted, h, nextTick } from 'vue'
+import { useMessage, useDialog, useNotification, NButton, NIcon, NTag, NInput, NTooltip, NSpace, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
+import DownloadProgressDialog from '@/components/DownloadProgressDialog.vue'
+import { useDownloadProgressStore } from '@/stores/downloadProgress'
 import type { FileInfo, AuthedDir } from '@/types'
 import {
   CloudUploadOutline, AddOutline, RefreshOutline, HomeOutline, FolderOutline,
@@ -503,7 +506,11 @@ import { format } from 'date-fns'
 
 const message = useMessage()
 const dialog = useDialog()
+const notification = useNotification()
 const { t } = useI18n()
+
+import { watch } from 'vue'
+
 
 // ============ 类型定义 ============
 interface FileTab {
@@ -542,15 +549,77 @@ const showCreateDirDialog = ref(false)
 const showMoreActions = ref(false)
 const newFolderName = ref('')
 const creating = ref(false)
-const uploadProgress = ref<Array<{ name: string; percentage: number; status: string; fullPath: string }>>([])
+const uploadProgress = ref<Array<UploadProgressItem>>([])  
+
+interface UploadProgressItem {
+  id?: string
+  name: string
+  percentage: number
+  status: string
+  fullPath: string
+}
+
 const clipboardData = ref<ClipboardData>({
   files: [],
   isCut: false,
   sourcePath: ''
 })
 
-// 文件内容区域引用
-const fileContentRef = ref<HTMLElement | null>(null)
+
+
+// // 文件内容区域引用
+// const fileContentRef = ref<HTMLElement | null>(null)
+
+// function ensureUploadItem(id?: string, name?: string, fullPath?: string) {
+//   const index = uploadProgress.value.findIndex(
+//     p => (id && p.id === id) || (fullPath && p.fullPath === fullPath) || p.name === name
+//   )
+
+//   if (index === -1) {
+//     const newItem = {
+//       id,
+//       name: name || fullPath || 'unknown',
+//       fullPath: fullPath || '',
+//       percentage: 0,
+//       status: 'default'
+//     }
+//     uploadProgress.value.push(newItem)
+//     return uploadProgress.value[uploadProgress.value.length - 1]
+//   }
+
+//   return uploadProgress.value[index]
+// }
+
+// 更新上传进度
+function updateUploadProgress(id?: string, name?: string, fullPath?: string, percentage?: number, status?: string) {
+  console.log('updateUploadProgress:', { id, name, fullPath, percentage, status })
+  console.log('uploadProgress:', uploadProgress.value)
+
+  const index = uploadProgress.value.findIndex(
+    p => (id && p.id === id) || (fullPath && p.fullPath === fullPath) || (name && p.name === name)
+  )
+
+  console.log('found index:', index)
+
+  if (index !== -1) {
+    // 创建新数组来触发响应式
+    uploadProgress.value = uploadProgress.value.map((item, i) => {
+      if (i === index) {
+        return {
+          ...item,
+          percentage: percentage ?? item.percentage,
+          status: status ?? item.status
+        }
+      }
+      return item
+    })
+    console.log('updated uploadProgress:', uploadProgress.value)
+  } else {
+    console.warn('未找到匹配的上传项:', { id, name, fullPath })
+  }
+}
+
+
 
 // 移动端适配
 const isMobile = ref(window.innerWidth <= 768)
@@ -1001,14 +1070,50 @@ function handleContextMenuSelect(key: string) {
   }
 }
 
+const downloadStore = useDownloadProgressStore()
+let downloadDialogRef: any = null
+
+function ensureDownloadDialog() {
+  if (!downloadDialogRef && downloadStore.hasActiveTasks) {
+    downloadDialogRef = dialog.create({
+      title: t('files.downloading'),
+      content: () => h(DownloadProgressDialog),
+      positiveText: t('common.close'),
+      onPositiveClick: () => {
+        downloadDialogRef = null
+        return true
+      },
+      onClose: () => {
+        downloadDialogRef = null
+      },
+    })
+  }
+}
+
 async function downloadFile(file: FileInfo) {
+  const taskId = `${file.path}-${Date.now()}`
+
   try {
     if (file.type === 'directory') {
       message.info(t('files.downloadingFolder', { name: file.name }))
     }
-    await fileService.downloadFile(file.path, file.type === 'directory' ? `${file.name}.zip` : file.name)
-    message.success(t('files.downloadSuccess'))
+
+    // 添加下载任务
+    downloadStore.addTask(taskId, file.name)
+    ensureDownloadDialog()
+
+    await fileService.downloadFile(
+      file.path,
+      file.type === 'directory' ? `${file.name}.zip` : file.name,
+      (loaded, total) => {
+        downloadStore.updateProgress(taskId, loaded, total > 0 ? total : (file.size || 0))
+      }
+    )
+
+    downloadStore.removeTask(taskId)
+    message.success(t('files.downloadSuccess', { name: file.name }))
   } catch (error: unknown) {
+    downloadStore.removeTask(taskId)
     const err = error as Error
     message.error(err.message || t('files.downloadFailed'))
   }
@@ -1275,9 +1380,9 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
   const fileId = file.id
-  
+
   const targetDir = getTargetDir()
-  if (!targetDir || targetDir === '/') {
+  if (!targetDir) {
     message.error(t('files.selectValidDirectory'))
     onError()
     return
@@ -1286,34 +1391,22 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
   const targetPath = targetDir === '/' ? `/${fileName}` : `${targetDir}/${fileName}`
 
   // 更新进度的回调
-  const updateProgress = (progress: number) => {
-    // 更新 uploadProgress 数组中对应文件的进度
-    const progressItem = uploadProgress.value.find(p => p.name === fileName)
-    if (progressItem) {
-      progressItem.percentage = progress
-      progressItem.status = progress >= 100 ? 'success' : 'default'
-    }
-    // 同时调用原始的 onProgress 回调
+  const updateProgressCallback = (progress: number) => {
+    console.log('progress:', progress)
+    updateUploadProgress(fileId, fileName, undefined, progress, progress >= 100 ? 'success' : 'default')
     onProgress(progress)
   }
 
   try {
-    await uploadSingleFile(fileObj, targetPath, updateProgress)
+    await uploadSingleFile(fileObj, targetPath, updateProgressCallback)
     // 上传成功，更新状态
-    const progressItem = uploadProgress.value.find(p => p.name === fileName)
-    if (progressItem) {
-      progressItem.percentage = 100
-      progressItem.status = 'success'
-    }
+    updateUploadProgress(fileId, fileName, undefined, 100, 'success')
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
   } catch (error: unknown) {
     // 上传失败，更新状态
-    const progressItem = uploadProgress.value.find(p => p.name === fileName)
-    if (progressItem) {
-      progressItem.status = 'error'
-    }
+    updateUploadProgress(fileId, fileName, undefined, undefined, 'error')
     uploadFailedCount.value++
     const err = error as Error
     message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
@@ -1324,12 +1417,19 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
 
 function handleFileUploadChange(options: { fileList: Array<{ id: string; name: string }> }) {
   uploadTotal.value = options.fileList.length
-  uploadProgress.value = options.fileList.map(f => ({
-    name: f.name,
-    percentage: 0,
-    status: 'default',
-    fullPath: ''
-  }))
+  // 只添加新文件，不重置已有的进度
+  options.fileList.forEach(f => {
+    const exists = uploadProgress.value.find(p => p.id === f.id)
+    if (!exists) {
+      uploadProgress.value = [...uploadProgress.value, {
+        id: f.id,
+        name: f.name,
+        percentage: 0,
+        status: 'default',
+        fullPath: ''
+      }]
+    }
+  })
 }
 
 /**
@@ -1340,7 +1440,8 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
-  
+  const fileId = file.id
+
   // 获取文件夹内的相对路径
   // Naive UI 使用 fullPath，原生 File API 使用 webkitRelativePath
   const relativePath = file.fullPath || (fileObj as File & { webkitRelativePath?: string })?.webkitRelativePath || ''
@@ -1362,34 +1463,21 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
   const targetPath = targetDir === '/' ? `/${finalPath}` : `${targetDir}/${finalPath}`
 
   // 更新进度的回调
-  const updateProgress = (progress: number) => {
-    // 更新 uploadProgress 数组中对应文件的进度
-    const progressItem = uploadProgress.value.find(p => p.name === fileName || p.fullPath === relativePath)
-    if (progressItem) {
-      progressItem.percentage = progress
-      progressItem.status = progress >= 100 ? 'success' : 'default'
-    }
-    // 同时调用原始的 onProgress 回调
+  const updateProgressCallback = (progress: number) => {
+    updateUploadProgress(fileId, fileName, relativePath, progress, progress >= 100 ? 'success' : 'default')
     onProgress(progress)
   }
 
   try {
-    await uploadSingleFile(fileObj, targetPath, updateProgress)
+    await uploadSingleFile(fileObj, targetPath, updateProgressCallback)
     // 上传成功，更新状态
-    const progressItem = uploadProgress.value.find(p => p.name === fileName || p.fullPath === relativePath)
-    if (progressItem) {
-      progressItem.percentage = 100
-      progressItem.status = 'success'
-    }
+    updateUploadProgress(fileId, fileName, relativePath, 100, 'success')
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
   } catch (error: unknown) {
     // 上传失败，更新状态
-    const progressItem = uploadProgress.value.find(p => p.name === fileName || p.fullPath === relativePath)
-    if (progressItem) {
-      progressItem.status = 'error'
-    }
+    updateUploadProgress(fileId, fileName, relativePath, undefined, 'error')
     uploadFailedCount.value++
     const err = error as Error
     message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
@@ -1400,12 +1488,19 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
 
 function handleDirectoryUploadChange(options: { fileList: Array<{ id: string; name: string; fullPath?: string; file?: File & { webkitRelativePath?: string } }> }) {
   uploadTotal.value = options.fileList.length
-  uploadProgress.value = options.fileList.map(f => ({
-    name: f.name,
-    percentage: 0,
-    status: 'default',
-    fullPath: f.fullPath || f.file?.webkitRelativePath || ''
-  }))
+  // 只添加新文件，不重置已有的进度
+  options.fileList.forEach(f => {
+    const exists = uploadProgress.value.find(p => p.id === f.id)
+    if (!exists) {
+      uploadProgress.value = [...uploadProgress.value, {
+        id: f.id,
+        name: f.name,
+        percentage: 0,
+        status: 'default',
+        fullPath: f.fullPath || f.file?.webkitRelativePath || ''
+      }]
+    }
+  })
 }
 
 // 检查上传是否全部完成
@@ -1426,6 +1521,7 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
+  const fileId = file.id
   
   const relativePath = file.path || ''
   const targetDir = getTargetDir()
@@ -1450,7 +1546,10 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
   }
 
   try {
-    await uploadSingleFile(fileObj, targetPath, onProgress)
+    await uploadSingleFile(fileObj, targetPath, (progress) => {
+      updateUploadProgress(fileId, fileName, undefined, progress, progress >= 100 ? 'success' : 'default')
+      onProgress(progress)
+    })
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
@@ -1465,13 +1564,24 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
 
 function handleUploadChange(options: { fileList: Array<{ id: string; name: string }> }) {
   uploadTotal.value = options.fileList.length
-  uploadProgress.value = options.fileList.map(f => ({
-    name: f.name,
-    percentage: 0,
-    status: 'default',
-    fullPath: ''
-  }))
+
+  options.fileList.forEach(f => {
+    const exists = uploadProgress.value.find(p => p.id === f.id)
+    if (!exists) {
+      console.log('添加新文件:', f)
+      uploadProgress.value.push({
+        id: f.id,
+        name: f.name,
+        percentage: 0,
+        completed: 100,
+        total: 0,
+        status: 'default',
+        fullPath: ''
+      })
+    }
+  })
 }
+
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
@@ -1757,6 +1867,36 @@ onMounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.progress-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.upload-progress-rail {
+  flex: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: #e5e5e5;
+  overflow: hidden;
+}
+
+.upload-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #18a058, #36ad6a);
+  transition: width 0.2s ease;
+}
+
+.upload-percent {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  min-width: 40px;
+  text-align: right;
 }
 
 /* 表格行样式 */

@@ -191,7 +191,7 @@ const currentLanguage = computed(() => locale.value)
 function getLanguageFlag(code: string): string {
   const flags: Record<string, string> = {
     'zh-CN': '🇨🇳',
-    'zh-TW': '🇹🇼',
+    'zh-TW': '🇭🇰',
     'en': '🇺🇸',
     'fr': '🇫🇷',
     'de': '🇩🇪',
@@ -497,5 +497,120 @@ async function changePassword() {
 .about-info p {
   margin: 8px 0;
   color: var(--text-color-secondary);
+}
+
+/* 响应式 */
+@media screen and (max-width: 768px) {
+  .settings-view {
+    gap: 16px;
+  }
+
+  .settings-card {
+    padding: 12px !important;
+  }
+
+  .language-section h3,
+  .theme-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  .language-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .language-item {
+    padding: 10px 12px;
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+
+  .language-flag {
+    font-size: 28px;
+  }
+
+  .language-name {
+    font-size: 13px;
+  }
+
+  .theme-section-header {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 12px;
+  }
+
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .theme-card-preview {
+    height: 80px;
+    padding: 6px;
+  }
+
+  .preview-sidebar-bar {
+    width: 16px;
+  }
+
+  .preview-main-area {
+    padding: 6px;
+    gap: 4px;
+  }
+
+  .about-section {
+    padding: 16px;
+  }
+
+  .about-logo img {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .about-logo h2 {
+    font-size: 20px;
+  }
+
+  /* 表单响应式 */
+  .settings-view :deep(.n-form) {
+    gap: 16px;
+  }
+
+  .settings-view :deep(.n-form-item) {
+    margin-bottom: 0;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .language-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .theme-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .theme-card-info {
+    padding: 8px;
+    flex-direction: column;
+    gap: 4px;
+    text-align: center;
+  }
+
+  .theme-card-name {
+    font-size: 12px;
+  }
+
+  .about-logo h2 {
+    font-size: 18px;
+  }
 }
 </style>

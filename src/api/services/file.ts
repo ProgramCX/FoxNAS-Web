@@ -4,7 +4,7 @@
  */
 
 import { http, httpClient } from '../client'
-import { apiEndpoints } from '../config'
+import { apiEndpoints, apiConfig } from '../config'
 import type { FileInfo, PageResponse, AuthedDir, FileOperationResult } from '@/types'
 
 /**
@@ -125,16 +125,56 @@ class FileService {
   async uploadFile(
     path: string,
     file: File,
-    onProgress?: (progress: number) => void
+    onProgress?: (total: number, completed: number) => void
   ): Promise<FileOperationResult> {
     const formData = new FormData()
     formData.append('file', file)
-    
-    return await http.upload<FileOperationResult>(
-      apiEndpoints.file.operation.upload + '?path=' + encodeURIComponent(path),
-      formData,
-      onProgress
-    )
+
+    const url = `${apiConfig.baseURL}${apiEndpoints.file.operation.upload}?path=${encodeURIComponent(path)}`
+    const token = localStorage.getItem(apiConfig.tokenKey)
+
+    return await new Promise<FileOperationResult>((resolve, reject) => {
+      const xhr = new XMLHttpRequest()
+      xhr.open('POST', url, true)
+
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+      }
+
+      xhr.upload.onprogress = (event) => {
+        if (!onProgress) return
+
+        // 直接使用文件大小计算进度，不依赖 event.total
+        const total = file.size
+        if (total > 0) {
+          const progress = Math.min(100, Math.round((event.loaded * 100) / total))
+          onProgress(progress)
+        } else if (event.loaded > 0) {
+          onProgress(1)
+        }
+      }
+
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState !== 4) return
+
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const data = xhr.responseText ? JSON.parse(xhr.responseText) : null
+            resolve(data as FileOperationResult)
+          } catch (err) {
+            reject(err as Error)
+          }
+        } else {
+          reject(new Error(xhr.statusText || 'Upload failed'))
+        }
+      }
+
+      xhr.onerror = () => {
+        reject(new Error('Upload failed'))
+      }
+
+      xhr.send(formData)
+    })
   }
 
   /**
@@ -143,8 +183,8 @@ class FileService {
    * @param path 文件路径
    * @param filename 下载文件名
    */
-  async downloadFile(path: string, filename?: string): Promise<void> {
-    await http.download(apiEndpoints.file.operation.get, { path }, filename)
+  async downloadFile(path: string, filename?: string, onProgress?: (loaded: number, total: number) => void): Promise<void> {
+    await http.download(apiEndpoints.file.operation.get, { path }, filename, onProgress)
   }
 
   /**

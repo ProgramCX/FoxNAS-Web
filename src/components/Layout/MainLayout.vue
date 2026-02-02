@@ -309,12 +309,13 @@ function toggleSidebar() {
 }
 
 /**
- * 切换主题
+ * 切换主题（在当前主题的亮色/暗色版本之间切换）
  */
 function toggleTheme() {
-  const themes = settingsStore.getThemes()
   const currentIndex = settingsStore.currentThemeIndex
-  const nextIndex = (currentIndex + 1) % themes.length
+  // 亮色主题索引为偶数，暗色主题索引为奇数
+  // 通过异或 1 来切换：偶数变奇数，奇数变偶数
+  const nextIndex = currentIndex ^ 1
   settingsStore.setTheme(nextIndex)
 }
 
@@ -368,6 +369,7 @@ const isMobile = ref(window.innerWidth <= 768)
 const mobileNavItems = computed(() => [
   { key: 'Dashboard', label: t('nav.home'), icon: HomeOutline },
   { key: 'files', label: t('nav.files'), icon: FolderOutline, permission: 'FILE' },
+  { key: 'users', label: t('nav.users'), icon: PeopleOutline, permission: 'USER' },
   { key: 'ddns', label: t('nav.ddns'), icon: CloudOutline, permission: 'DDNS' },
   { key: 'settings', label: t('nav.settings'), icon: SettingsOutline },
 ].filter(item => !item.permission || hasPermission(item.permission)))
@@ -606,6 +608,34 @@ onUnmounted(() => {
 
   .hide-on-desktop {
     display: flex !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .header {
+    padding: 0 8px;
+    height: 52px;
+  }
+
+  .header-right {
+    gap: 4px;
+  }
+
+  .header-right :deep(.n-button) {
+    padding: 0 8px;
+  }
+
+  .content {
+    padding: 8px;
+    padding-bottom: 68px;
+  }
+
+  .mobile-bottom-nav {
+    height: 56px;
+  }
+
+  .nav-label {
+    font-size: 10px;
   }
 }
 

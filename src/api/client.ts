@@ -226,14 +226,24 @@ export const http = {
     formData: FormData,
     onProgress?: (progress: number) => void
   ): Promise<T> {
+    const fileInForm = formData.get('file') as File | null
     return httpClient
       .post(url, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
         onUploadProgress: (progressEvent) => {
-          if (progressEvent.total && onProgress) {
-            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          if (!onProgress) return
+
+          // Axios v1 提供 progress (0~1)，优先使用以避免 total 为空导致不更新
+          if (typeof progressEvent.progress === 'number') {
+            onProgress(Math.round(progressEvent.progress * 100))
+            return
+          }
+
+          const total = progressEvent.total || fileInForm?.size || 0
+          if (total > 0) {
+            const progress = Math.round((progressEvent.loaded * 100) / total)
             onProgress(progress)
           }
         },
@@ -243,21 +253,70 @@ export const http = {
 
   /**
    * 下载文件
+   * 使用 fetch API 配合 ReadableStream，支持显示下载进度
    */
-  download(url: string, params?: Record<string, unknown>, filename?: string): Promise<void> {
-    return httpClient
-      .get(url, {
-        params,
-        responseType: 'blob',
-      })
-      .then((response) => {
-        const blob = new Blob([response.data])
-        const link = document.createElement('a')
-        link.href = window.URL.createObjectURL(blob)
-        link.download = filename || 'download'
-        link.click()
-        window.URL.revokeObjectURL(link.href)
-      })
+  async download(
+    url: string,
+    params?: Record<string, unknown>,
+    filename?: string,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<void> {
+    const token = localStorage.getItem(apiConfig.tokenKey)
+    const queryParams = params
+      ? '?' + new URLSearchParams(params as Record<string, string>).toString()
+      : ''
+    const fullUrl = `${apiConfig.baseURL}${url}${queryParams}`
+
+    const response = await fetch(fullUrl, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status} ${response.statusText}`)
+    }
+
+    const contentLength = response.headers.get('Content-Length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+    const reader = response.body?.getReader()
+
+    if (!reader) {
+      throw new Error('无法读取响应流')
+    }
+
+    const chunks: Uint8Array[] = []
+    let loaded = 0
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+
+      chunks.push(value)
+      loaded += value.length
+
+      if (onProgress) {
+        onProgress(loaded, total)
+      }
+    }
+
+    // 合并所有 chunks
+    const allChunks = new Uint8Array(loaded)
+    let position = 0
+    for (const chunk of chunks) {
+      allChunks.set(chunk, position)
+      position += chunk.length
+    }
+
+    // 创建 blob 并下载
+    const blob = new Blob([allChunks])
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = filename || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(link.href)
   },
 }
 

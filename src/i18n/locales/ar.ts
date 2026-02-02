@@ -250,6 +250,7 @@ export default {
     path: 'المسار',
     selectFiles: 'اختر الملفات',
     dropFilesHere: 'أسقط الملفات هنا',
+    selectValidDirectory: 'يرجى تحديد دليل هدف صالح',
     folderName: 'اسم المجلد',
     enterFolderName: 'أدخل اسم المجلد',
     enterNewName: 'أدخل الاسم الجديد',
