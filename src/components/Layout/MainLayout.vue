@@ -207,6 +207,7 @@ const userPermissions = computed(() => authStore.userPermissions || [])
 // 检查用户是否有指定权限（不区分大小写）
 function hasPermission(permission: string): boolean {
   const normalizedPermission = permission.toUpperCase()
+  console.log('Checking permission:', userPermissions.value)
   return userPermissions.value.some(p => p.toUpperCase() === normalizedPermission)
 }
 

@@ -28,6 +28,25 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/RetrieveUsernameView.vue'),
     meta: { requiresAuth: false, title: '找回用户名' },
   },
+  // OAuth 相关路由
+  {
+    path: '/oauth/success',
+    name: 'OAuthSuccess',
+    component: () => import('@/views/OAuthSuccessView.vue'),
+    meta: { requiresAuth: false, title: 'OAuth 登录成功' },
+  },
+  {
+    path: '/oauth/activate',
+    name: 'OAuthActivate',
+    component: () => import('@/views/OAuthActivateView.vue'),
+    meta: { requiresAuth: false, title: '激活账户' },
+  },
+  {
+    path: '/oauth/error',
+    name: 'OAuthError',
+    component: () => import('@/views/OAuthErrorView.vue'),
+    meta: { requiresAuth: false, title: 'OAuth 登录失败' },
+  },
   {
     path: '/',
     component: () => import('@/components/Layout/MainLayout.vue'),

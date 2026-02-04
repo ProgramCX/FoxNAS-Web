@@ -129,6 +129,24 @@
             {{ t('login.forgotUsername') }}
           </n-button>
         </div>
+
+        <!-- OAuth 第三方登录 -->
+        <div v-if="!isRegisterMode" class="oauth-section">
+          <n-divider>{{ t('login.orLoginWith') }}</n-divider>
+          <div class="oauth-buttons">
+            <n-button 
+              size="large" 
+              block 
+              @click="handleGitHubLogin"
+              class="github-btn"
+            >
+              <template #icon>
+                <n-icon><LogoGithub /></n-icon>
+              </template>
+              {{ t('login.loginWithGitHub') }}
+            </n-button>
+          </div>
+        </div>
       </n-form>
 
       <!-- 初始化管理员提示 -->
@@ -157,7 +175,7 @@ import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { http } from '@/api/client'
-import { apiEndpoints } from '@/api/config'
+import { apiEndpoints, apiConfig } from '@/api/config'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 import {
   CloudOutline,
@@ -166,6 +184,7 @@ import {
   KeyOutline,
   MailOutline,
 } from '@vicons/ionicons5'
+import { LogoGithub } from '@vicons/ionicons5'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -280,6 +299,17 @@ function goToForgotPassword() {
 // 跳转到找回用户名页面
 function goToRetrieveUsername() {
   router.push('/retrieve-username')
+}
+
+// 处理 GitHub OAuth 登录
+function handleGitHubLogin() {
+  // 构建后端 OAuth 授权地址
+  // 后端 OAuth 入口: /api/oauth2/authorization/github
+  const baseUrl = apiConfig.baseURL.replace('/api', '') || window.location.origin
+  const oauthUrl = `${baseUrl}/api/oauth2/authorization/github`
+  
+  // 跳转到后端 OAuth 授权地址
+  window.location.href = oauthUrl
 }
 
 // 处理登录
@@ -408,6 +438,31 @@ onMounted(async () => {
 
 .auth-links .divider {
   color: var(--text-color-quaternary);
+}
+
+/* OAuth 第三方登录 */
+.oauth-section {
+  margin-top: 16px;
+}
+
+.oauth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.github-btn {
+  background-color: #24292e;
+  color: #ffffff;
+  border: none;
+}
+
+.github-btn:hover {
+  background-color: #2f363d;
+}
+
+.github-btn:active {
+  background-color: #1b1f23;
 }
 
 .init-admin-section {

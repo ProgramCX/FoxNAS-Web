@@ -128,6 +128,8 @@ export default {
     initFailed: '初始化失败',
     registerSuccess: '注册成功，请登录',
     forgotUsername: '忘记用户名',
+    orLoginWith: '或通过以下方式登录',
+    loginWithGitHub: '使用 GitHub 登录',
   },
 
   // 忘记密码页面
@@ -630,6 +632,49 @@ export default {
   auth: {
     loggedIn: '已登录',
     notLoggedIn: '未登录',
+  },
+
+  // OAuth 相关
+  oauth: {
+    error: 'OAuth 登录失败',
+    backToLogin: '返回登录',
+    success: {
+      title: '登录成功',
+      subtitle: 'OAuth 认证已完成',
+      processing: '正在处理登录信息...',
+      redirecting: '即将跳转到控制台...',
+      goToDashboard: '进入控制台',
+      missingToken: '缺少认证令牌，请重新登录',
+      failed: '登录处理失败',
+    },
+    activate: {
+      title: '激活账户',
+      subtitle: '请完善您的账户信息以完成激活',
+      email: '邮箱地址',
+      emailPlaceholder: '请输入邮箱地址',
+      verifyCode: '验证码',
+      verifyCodePlaceholder: '请输入6位验证码',
+      getVerifyCode: '获取验证码',
+      password: '设置密码',
+      passwordPlaceholder: '请输入密码（至少6位）',
+      confirmPassword: '确认密码',
+      confirmPasswordPlaceholder: '请再次输入密码',
+      activateButton: '激活账户',
+      missingTicket: '激活凭证缺失或已过期，请重新通过 OAuth 登录',
+      codeSent: '验证码已发送，请查收邮箱',
+      sendCodeFailed: '验证码发送失败',
+      success: '账户激活成功',
+      failed: '账户激活失败',
+      successTitle: '激活成功',
+      successWithUsername: '您的账户已成功激活！\n\n您的用户名是：{username}\n\n请记住此用户名，它将用于登录系统。',
+      enterSystem: '进入系统',
+    },
+    errorPage: {
+      title: '登录失败',
+      subtitle: 'OAuth 认证过程中出现问题',
+      defaultMessage: '未知错误，请稍后重试',
+      retry: '重新尝试 OAuth 登录',
+    },
   },
 
   // 日志管理

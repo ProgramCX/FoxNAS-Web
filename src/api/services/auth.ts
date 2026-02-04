@@ -18,6 +18,24 @@ interface RetrieveUsernameRequest {
   code: string
 }
 
+interface OAuthActivateRequest {
+  email: string
+  code: string
+  password: string
+  ticket: string
+}
+
+/**
+ * OAuth 激活响应
+ */
+interface OAuthActivateResponse {
+  message: string
+  accessToken: string
+  refreshToken: string
+  username: string,
+  uuid: string
+}
+
 /**
  * 认证服务类
  */
@@ -88,6 +106,26 @@ class AuthService {
    */
   async checkStatus(): Promise<string> {
     return await http.get<string>(apiEndpoints.status.check)
+  }
+
+  /**
+   * 发送 OAuth 激活验证码
+   * POST /api/auth/oauth/sendActivateCode
+   * @param email 邮箱地址
+   * @returns 发送结果消息
+   */
+  async sendOAuthActivateCode(email: string): Promise<string> {
+    return await http.post<string>(apiEndpoints.oauth.sendActivateCode, { email })
+  }
+
+  /**
+   * 激活 OAuth 账户
+   * POST /api/auth/oauth/activate
+   * @param data 激活信息
+   * @returns 激活结果，包含 token 和用户名
+   */
+  async activateOAuthAccount(data: OAuthActivateRequest): Promise<OAuthActivateResponse> {
+    return await http.post<OAuthActivateResponse>(apiEndpoints.oauth.activate, data)
   }
 }
 

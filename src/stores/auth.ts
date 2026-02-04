@@ -116,7 +116,7 @@ export const useAuthStore = defineStore('auth', () => {
       const currentUuid = userUuid.value
       if (!currentUuid) return
 
-      const response = await http.get<UserPermission[]>(apiEndpoints.user.permissions, {
+      const response = await http.get<UserPermission[]>(apiEndpoints.common.permissions, {
         uuid: currentUuid
       })
 
@@ -139,6 +139,25 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem(apiConfig.refreshTokenKey)
     localStorage.removeItem(apiConfig.authKey)
     localStorage.removeItem(USERNAME_KEY)
+  }
+
+  /**
+   * 直接设置 tokens（用于 OAuth 登录成功回调）
+   * @param accessToken Access Token
+   * @param refreshToken Refresh Token
+   */
+  async function setTokens(accessToken: string, refreshToken: string): Promise<void> {
+    token.value = accessToken
+    localStorage.setItem(apiConfig.tokenKey, accessToken)
+    
+    if (refreshToken) {
+      localStorage.setItem(apiConfig.refreshTokenKey, refreshToken)
+    }
+    
+    // 获取用户信息
+    await fetchUserInfo()
+    // 获取用户权限
+    await fetchPermissions()
   }
 
   /**
@@ -186,6 +205,15 @@ export const useAuthStore = defineStore('auth', () => {
     isInitialized.value = true
   }
 
+  function saveUserInfoToLocalStorage(id: string, loginUsername: string): void {
+    userInfo.value = {
+        id: id,
+        userName: loginUsername,
+        state: 'enabled'
+      }
+      localStorage.setItem(USERNAME_KEY, loginUsername)
+  }
+
   return {
     // State
     token,
@@ -205,7 +233,9 @@ export const useAuthStore = defineStore('auth', () => {
     fetchUserInfo,
     fetchPermissions,
     logout,
+    setTokens,
     initialize,
+    saveUserInfoToLocalStorage,
   }
 })
 

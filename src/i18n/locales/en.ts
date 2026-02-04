@@ -128,6 +128,8 @@ export default {
     initFailed: 'Initialization failed',
     registerSuccess: 'Registration successful, please login',
     forgotUsername: 'Forgot Username',
+    orLoginWith: 'Or login with',
+    loginWithGitHub: 'Login with GitHub',
   },
 
   // Forgot Password Page
@@ -638,6 +640,49 @@ export default {
   auth: {
     loggedIn: 'Logged In',
     notLoggedIn: 'Not Logged In',
+  },
+
+  // OAuth Related
+  oauth: {
+    error: 'OAuth Login Failed',
+    backToLogin: 'Back to Login',
+    success: {
+      title: 'Login Successful',
+      subtitle: 'OAuth authentication completed',
+      processing: 'Processing login information...',
+      redirecting: 'Redirecting to dashboard...',
+      goToDashboard: 'Go to Dashboard',
+      missingToken: 'Missing authentication token, please login again',
+      failed: 'Login processing failed',
+    },
+    activate: {
+      title: 'Activate Account',
+      subtitle: 'Please complete your account information to activate',
+      email: 'Email Address',
+      emailPlaceholder: 'Enter email address',
+      verifyCode: 'Verification Code',
+      verifyCodePlaceholder: 'Enter 6-digit verification code',
+      getVerifyCode: 'Get Code',
+      password: 'Set Password',
+      passwordPlaceholder: 'Enter password (at least 6 characters)',
+      confirmPassword: 'Confirm Password',
+      confirmPasswordPlaceholder: 'Enter password again',
+      activateButton: 'Activate Account',
+      missingTicket: 'Activation ticket missing or expired, please login via OAuth again',
+      codeSent: 'Verification code sent, please check your email',
+      sendCodeFailed: 'Failed to send verification code',
+      success: 'Account activated successfully',
+      failed: 'Account activation failed',
+      successTitle: 'Activation Successful',
+      successWithUsername: 'Your account has been activated successfully!\n\nYour username is: {username}\n\nPlease remember this username for future logins.',
+      enterSystem: 'Enter System',
+    },
+    errorPage: {
+      title: 'Login Failed',
+      subtitle: 'An error occurred during OAuth authentication',
+      defaultMessage: 'Unknown error, please try again later',
+      retry: 'Retry OAuth Login',
+    },
   },
 
   // Log Management

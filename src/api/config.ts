@@ -14,6 +14,8 @@ const API_PREFIX = import.meta.env.VITE_API_PREFIX || '/api'
  */
 export const apiConfig = {
   baseURL: API_BASE_URL ? `${API_BASE_URL}${API_PREFIX}` : API_PREFIX,
+  // 后端服务器根地址（用于 OAuth 等需要完整 URL 的场景）
+  serverBaseURL: API_BASE_URL || '',
   timeout: 30000,
   // Access Token 存储的 key
   tokenKey: 'foxnas_token',
@@ -37,6 +39,13 @@ export const apiEndpoints = {
     refresh: '/auth/refresh',
     resetPassword: '/auth/password/reset',
     retrieveUsername: '/auth/username/retrieve',
+  },
+  // OAuth 相关
+  oauth: {
+    activate: '/auth/oauth/activate',
+    sendActivateCode: '/auth/oauth/sendActivateCode',
+    // OAuth 授权入口（需要使用完整 URL）
+    github: '/api/oauth2/authorization/github',
   },
   // 文件信息
   file: {
@@ -122,7 +131,7 @@ export const apiEndpoints = {
   },
   // 公共接口
   common: {
-    permissions: '/common/permissions',
+    permissions: '/common/permissionsByUuid',
   },
   // 日志管理
   log: {
