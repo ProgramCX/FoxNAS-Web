@@ -184,6 +184,7 @@ import {
   ColorPaletteOutline,
   MenuOutline,
   DocumentTextOutline,
+  StatsChartOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -220,6 +221,7 @@ const activeKey = computed(() => {
   if (path.startsWith('/ddns')) return 'ddns'
   if (path.startsWith('/settings')) return 'settings'
   if (path.startsWith('/logs')) return 'logs'
+  if (path.startsWith('/monitor')) return 'monitor'
   return name
 })
 
@@ -264,6 +266,11 @@ const menuOptions = computed(() => [
     label: t('nav.logs'),
     key: 'logs',
     icon: renderIcon(DocumentTextOutline),
+  },
+  {
+    label: t('nav.monitor'),
+    key: 'monitor',
+    icon: renderIcon(StatsChartOutline),
   },
   {
     label: t('dashboard.systemInfo'),
@@ -341,6 +348,8 @@ function handleMenuClick(key: string) {
     router.push('/ddns')
   } else if (key === 'logs') {
     router.push('/logs')
+  } else if (key === 'monitor') {
+    router.push('/monitor')
   } else if (key === 'info') {
     router.push('/')
   } else if (key === 'settings') {

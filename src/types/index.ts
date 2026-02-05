@@ -261,3 +261,57 @@ export interface LogQueryParams {
   startTime?: string
   endTime?: string
 }
+
+/**
+ * 系统监控相关类型
+ */
+
+/**
+ * 时间单位类型
+ * min: 分钟, h: 小时, d: 天, m: 月, y: 年
+ */
+export type TimeUnit = 'min' | 'h' | 'd' | 'm' | 'y'
+
+/**
+ * 磁盘指标
+ */
+export interface SysDiskMetrics {
+  id: string
+  mainId: string | null
+  diskName: string
+  usedSpace: number
+  totalSpace: number
+}
+
+/**
+ * 系统主指标
+ */
+export interface SysMainMetrics {
+  id: string
+  cpu: number
+  totalMemory: number
+  usedMemory: number
+  uploadSpeed: number
+  downloadSpeed: number
+  timestamp: string
+  diskMetricsList: SysDiskMetrics[]
+}
+
+/**
+ * 时间范围预设选项
+ */
+export interface TimeRangePreset {
+  label: string
+  value: number
+  unit: TimeUnit
+}
+
+/**
+ * 图表导出选项
+ */
+export interface ChartExportOptions {
+  filename?: string
+  type?: 'png' | 'jpeg'
+  pixelRatio?: number
+  backgroundColor?: string
+}

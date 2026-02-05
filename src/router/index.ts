@@ -100,6 +100,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/LogManagementView.vue'),
         meta: { title: '日志管理' },
       },
+      {
+        path: 'monitor',
+        name: 'SystemMonitor',
+        component: () => import('@/views/SystemMonitorView.vue'),
+        meta: { title: '系统监控' },
+      },
     ],
   },
   {

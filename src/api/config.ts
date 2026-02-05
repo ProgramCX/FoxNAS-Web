@@ -139,6 +139,11 @@ export const apiEndpoints = {
     detail: '/log/error',
     deleteBefore: '/log/error/before',
   },
+  // 系统监控
+  monitor: {
+    byTimeRange: '/monitor/getByMillRange',
+    byLastTime: '/monitor/getRecentStatistics',
+  },
 }
 
 export default apiConfig
