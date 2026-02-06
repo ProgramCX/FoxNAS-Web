@@ -16,29 +16,23 @@
       <!-- 登录表单 -->
       <n-form ref="formRef" :model="formData" :rules="rules" @submit.prevent="handleLogin">
         <n-form-item path="username" :label="t('login.username')">
-          <n-input
-            v-model:value="formData.username"
-            :placeholder="t('login.usernamePlaceholder')"
-            size="large"
-            :input-props="{ autocomplete: 'username' }"
-          >
+          <n-input v-model:value="formData.username" :placeholder="t('login.usernamePlaceholder')" size="large"
+            :input-props="{ autocomplete: 'username' }">
             <template #prefix>
-              <n-icon><PersonOutline /></n-icon>
+              <n-icon>
+                <PersonOutline />
+              </n-icon>
             </template>
           </n-input>
         </n-form-item>
 
         <n-form-item path="password" :label="t('login.password')">
-          <n-input
-            v-model:value="formData.password"
-            type="password"
-            :placeholder="t('login.passwordPlaceholder')"
-            size="large"
-            show-password-on="click"
-            :input-props="{ autocomplete: 'current-password' }"
-          >
+          <n-input v-model:value="formData.password" type="password" :placeholder="t('login.passwordPlaceholder')"
+            size="large" show-password-on="click" :input-props="{ autocomplete: 'current-password' }">
             <template #prefix>
-              <n-icon><LockClosedOutline /></n-icon>
+              <n-icon>
+                <LockClosedOutline />
+              </n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -46,21 +40,14 @@
         <!-- 验证码（仅在注册或忘记密码时显示） -->
         <n-form-item v-if="isRegisterMode" path="code" :label="t('login.verifyCode')">
           <n-input-group>
-            <n-input
-              v-model:value="formData.code"
-              :placeholder="t('login.verifyCodePlaceholder')"
-              size="large"
-            >
+            <n-input v-model:value="formData.code" :placeholder="t('login.verifyCodePlaceholder')" size="large">
               <template #prefix>
-                <n-icon><KeyOutline /></n-icon>
+                <n-icon>
+                  <KeyOutline />
+                </n-icon>
               </template>
             </n-input>
-            <n-button
-              size="large"
-              :disabled="countdown > 0"
-              @click="sendVerificationCode"
-              :loading="sendingCode"
-            >
+            <n-button size="large" :disabled="countdown > 0" @click="sendVerificationCode" :loading="sendingCode">
               {{ countdown > 0 ? `${countdown}s` : t('login.getVerifyCode') }}
             </n-button>
           </n-input-group>
@@ -68,27 +55,22 @@
 
         <!-- 邮箱输入（仅注册时显示） -->
         <n-form-item v-if="isRegisterMode" path="email" :label="t('login.email')">
-          <n-input
-            v-model:value="formData.email"
-            :placeholder="t('login.emailPlaceholder')"
-            size="large"
-          >
+          <n-input v-model:value="formData.email" :placeholder="t('login.emailPlaceholder')" size="large">
             <template #prefix>
-              <n-icon><MailOutline /></n-icon>
+              <n-icon>
+                <MailOutline />
+              </n-icon>
             </template>
           </n-input>
         </n-form-item>
 
         <n-form-item v-if="isRegisterMode" path="confirmPassword" :label="t('login.confirmPassword')">
-          <n-input
-            v-model:value="formData.confirmPassword"
-            type="password"
-            :placeholder="t('login.confirmPasswordPlaceholder')"
-            size="large"
-            show-password-on="click"
-          >
+          <n-input v-model:value="formData.confirmPassword" type="password"
+            :placeholder="t('login.confirmPasswordPlaceholder')" size="large" show-password-on="click">
             <template #prefix>
-              <n-icon><LockClosedOutline /></n-icon>
+              <n-icon>
+                <LockClosedOutline />
+              </n-icon>
             </template>
           </n-input>
         </n-form-item>
@@ -100,14 +82,7 @@
 
         <!-- 登录/注册按钮 -->
         <n-form-item>
-          <n-button
-            type="primary"
-            size="large"
-            block
-            :loading="loading"
-            :disabled="loading"
-            @click="handleLogin"
-          >
+          <n-button type="primary" size="large" block :loading="loading" :disabled="loading" @click="handleLogin">
             {{ isRegisterMode ? t('login.registerButton') : t('login.loginButton') }}
           </n-button>
         </n-form-item>
@@ -134,17 +109,44 @@
         <div v-if="!isRegisterMode" class="oauth-section">
           <n-divider>{{ t('login.orLoginWith') }}</n-divider>
           <div class="oauth-buttons">
-            <n-button 
-              size="large" 
-              block 
-              @click="handleGitHubLogin"
-              class="github-btn"
-            >
+            <n-button @click="handleGitHubLogin" circle size="large" strong>
               <template #icon>
-                <n-icon><LogoGithub /></n-icon>
+                <n-icon>
+                  <LogoGithub />
+                </n-icon>
               </template>
-              {{ t('login.loginWithGitHub') }}
             </n-button>
+
+            <n-button @click="handleQQLogin" circle size="large" strong>
+              <template #icon>
+                <Icon color="#1aa7ef">
+                  <Qq />
+                </Icon>
+              </template>
+            </n-button>
+
+            <n-button @click="handleWeixinLogin" circle size="large" strong>
+              <template #icon>
+                <Icon color="#28c445" :size="24">
+                  <Weixin />
+                </Icon>
+              </template>
+            </n-button>
+
+            <n-button @click="handleMicrosoftLogin" circle size="large" strong>
+              <template #icon>
+                <img :src="MicrosoftIcon" style="width: 20px; height: 20px;" alt="Microsoft" />
+              </template>
+            </n-button>
+
+             <n-button @click="handleEmailLogin" circle size="large" strong>
+              <template #icon>
+                 <n-icon color="#FF6600">
+                  <Mail />
+                </n-icon>
+              </template>
+            </n-button>
+
           </div>
         </div>
       </n-form>
@@ -177,6 +179,8 @@ import { useAuthStore } from '@/stores/auth'
 import { http } from '@/api/client'
 import { apiEndpoints, apiConfig } from '@/api/config'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
+import { Qq, Weixin } from '@vicons/fa'
+import { Icon } from '@vicons/utils'
 import {
   CloudOutline,
   PersonOutline,
@@ -184,8 +188,8 @@ import {
   KeyOutline,
   MailOutline,
 } from '@vicons/ionicons5'
-import { LogoGithub } from '@vicons/ionicons5'
-
+import { LogoGithub, Mail } from '@vicons/ionicons5'
+import MicrosoftIcon from '@/assets/microsoft-color.svg'
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
@@ -301,15 +305,38 @@ function goToRetrieveUsername() {
   router.push('/retrieve-username')
 }
 
-// 处理 GitHub OAuth 登录
-function handleGitHubLogin() {
+function goOauthLogin(provider: string) {
   // 构建后端 OAuth 授权地址
-  // 后端 OAuth 入口: /api/oauth2/authorization/github
+  // 后端 OAuth 入口: /api/oauth2/authorization/{provider}
   const baseUrl = apiConfig.baseURL.replace('/api', '') || window.location.origin
-  const oauthUrl = `${baseUrl}/api/oauth2/authorization/github`
-  
+  const oauthUrl = `${baseUrl}/api/oauth2/authorization/${provider}`
+
   // 跳转到后端 OAuth 授权地址
   window.location.href = oauthUrl
+}
+// 处理 GitHub OAuth 登录
+function handleGitHubLogin() {
+  goOauthLogin('github')
+}
+
+// QQ OAuth 登录
+function handleQQLogin() {
+  goOauthLogin('qq')
+}
+
+// 微信 OAuth 登录
+function handleWeixinLogin() {
+ goOauthLogin('weixin')
+}
+
+// Microsoft OAuth 登录
+function handleMicrosoftLogin() {
+  goOauthLogin('microsoft')
+}
+
+// 邮箱登录
+function handleEmailLogin() {
+  
 }
 
 // 处理登录
@@ -447,23 +474,20 @@ onMounted(async () => {
 
 .oauth-buttons {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: center;
   gap: 12px;
 }
 
-.github-btn {
-  background-color: #24292e;
-  color: #ffffff;
-  border: none;
-}
 
-.github-btn:hover {
+
+/* .github-btn:hover {
   background-color: #2f363d;
 }
 
 .github-btn:active {
   background-color: #1b1f23;
-}
+} */
 
 .init-admin-section {
   margin-top: 16px;
@@ -536,4 +560,6 @@ body.dark .login-container {
 body.dark .login-card {
   background: #242428;
 }
+
+
 </style>

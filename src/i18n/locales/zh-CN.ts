@@ -130,7 +130,7 @@ export default {
     registerSuccess: '注册成功，请登录',
     forgotUsername: '忘记用户名',
     orLoginWith: '或通过以下方式登录',
-    loginWithGitHub: '使用 GitHub 登录',
+    // loginWithGitHub: '使用 GitHub 登录',
   },
 
   // 忘记密码页面
