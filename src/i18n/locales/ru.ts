@@ -139,6 +139,9 @@ export default {
     initFailed: 'Ошибка инициализации',
     registerSuccess: 'Регистрация успешна, пожалуйста, войдите',
     forgottenUsername: 'Забыли имя пользователя',
+    emailLogin: 'Вход по почте',
+    passwordLogin: 'Пароль',
+    codeLogin: 'Код подтверждения',
   },
 
   // Страница Забыли пароль
@@ -383,6 +386,50 @@ export default {
     confirmPassword: 'Подтвердите пароль',
     passwordChanged: 'Пароль успешно изменен',
     passwordChangeFailed: 'Ошибка изменения пароля',
+
+    // Привязка email
+    emailSettings: 'Привязка Email',
+    emailBound: 'Email Привязан',
+    emailNotBound: 'Email Не Привязан',
+    emailBindHint: 'Привяжите email для восстановления пароля и получения уведомлений',
+    bindEmail: 'Привязать Email',
+    unbindEmail: 'Отвязать Email',
+    emailFeatures: 'Функции Email',
+    emailFeature1: 'Восстановление имени пользователя и пароля',
+    emailFeature2: 'Получение системных уведомлений и предупреждений безопасности',
+    emailFeature3: 'Повышение безопасности аккаунта',
+    unbindEmailWarning: 'После отвязки вы не сможете восстановить пароль через email. Продолжить?',
+    emailBindSuccess: 'Email успешно привязан',
+    emailBindFailed: 'Не удалось привязать email',
+    emailUnbindSuccess: 'Email успешно отвязан',
+    emailUnbindFailed: 'Не удалось отвязать email',
+    loadEmailFailed: 'Не удалось загрузить информацию об email',
+    noEmailToSend: 'Нет доступного email для отправки кода подтверждения',
+
+    // Привязка OAuth
+    oauthSettings: 'Сторонние Аккаунты',
+    oauthProviders: 'Способы Входа Через Сторонние Сервисы',
+    bound: 'Привязан',
+    notBound: 'Не Привязан',
+    bind: 'Привязать',
+    unbind: 'Отвязать',
+    goToBind: 'Перейти к Привязке',
+    bindOAuthTitle: 'Привязать {provider}',
+    bindOAuthDesc: 'После привязки {provider} вы сможете быстро входить с помощью аккаунта {provider}',
+    unbindOAuthTitle: 'Отвязать {provider}',
+    unbindOAuthDesc: 'После отвязки {provider} вы не сможете входить с помощью этого аккаунта. Продолжить?',
+    oauthFeatures: 'Информация о Входе Через Сторонние Сервисы',
+    oauthFeatureDesc: 'После привязки сторонних аккаунтов вы сможете быстро входить без запоминания сложных паролей',
+    oauthBindSuccess: 'Сторонний аккаунт успешно привязан',
+    oauthBindFailed: 'Не удалось привязать сторонний аккаунт',
+    oauthUnbindSuccess: 'Сторонний аккаунт успешно отвязан',
+    oauthUnbindFailed: 'Не удалось отвязать сторонний аккаунт',
+    loadOAuthFailed: 'Не удалось загрузить информацию о стороннем аккаунте',
+
+    // Общее
+    fillAllFields: 'Пожалуйста, заполните все обязательные поля',
+    enterPassword: 'Пожалуйста, введите пароль',
+
     themes: {
       defaultGreen: 'Стандартный зеленый',
       darkGreen: 'Темно-зеленый',

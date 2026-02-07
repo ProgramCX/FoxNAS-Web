@@ -139,6 +139,9 @@ export default {
     initFailed: 'فشل التهيئة',
     registerSuccess: 'التسجيل ناجح، يرجى تسجيل الدخول',
     forgottenUsername: 'هل نسيت اسم المستخدم',
+    emailLogin: 'تسجيل الدخول بالبريد',
+    passwordLogin: 'كلمة المرور',
+    codeLogin: 'رمز التحقق',
   },
 
   // صفحة نسيت كلمة المرور
@@ -428,6 +431,50 @@ export default {
     confirmPassword: 'تأكيد كلمة المرور',
     passwordChanged: 'تم تغيير كلمة المرور بنجاح',
     passwordChangeFailed: 'فشل تغيير كلمة المرور',
+
+    // ربط البريد الإلكتروني
+    emailSettings: 'ربط البريد الإلكتروني',
+    emailBound: 'البريد الإلكتروني مرتبط',
+    emailNotBound: 'البريد الإلكتروني غير مرتبط',
+    emailBindHint: 'اربط بريدك الإلكتروني لاستعادة كلمة المرور واستلام الإشعارات',
+    bindEmail: 'ربط البريد الإلكتروني',
+    unbindEmail: 'إلغاء ربط البريد الإلكتروني',
+    emailFeatures: 'ميزات البريد الإلكتروني',
+    emailFeature1: 'استعادة اسم المستخدم وكلمة المرور',
+    emailFeature2: 'استلام إشعارات النظام وتنبيهات الأمان',
+    emailFeature3: 'تحسين أمان الحساب',
+    unbindEmailWarning: 'بعد إلغاء الربط، لن تتمكن من استعادة كلمة المرور عبر البريد الإلكتروني. هل تريد المتابعة؟',
+    emailBindSuccess: 'تم ربط البريد الإلكتروني بنجاح',
+    emailBindFailed: 'فشل ربط البريد الإلكتروني',
+    emailUnbindSuccess: 'تم إلغاء ربط البريد الإلكتروني بنجاح',
+    emailUnbindFailed: 'فشل إلغاء ربط البريد الإلكتروني',
+    loadEmailFailed: 'فشل تحميل معلومات البريد الإلكتروني',
+    noEmailToSend: 'لا يوجد بريد إلكتروني متاح لإرسال رمز التحقق',
+
+    // ربط OAuth
+    oauthSettings: 'حسابات الطرف الثالث',
+    oauthProviders: 'طرق تسجيل الدخول عبر الطرف الثالث',
+    bound: 'مرتبط',
+    notBound: 'غير مرتبط',
+    bind: 'ربط',
+    unbind: 'إلغاء الربط',
+    goToBind: 'الذهاب للربط',
+    bindOAuthTitle: 'ربط {provider}',
+    bindOAuthDesc: 'بعد ربط {provider}، يمكنك تسجيل الدخول بسرعة باستخدام حساب {provider}',
+    unbindOAuthTitle: 'إلغاء ربط {provider}',
+    unbindOAuthDesc: 'بعد إلغاء ربط {provider}، لن تتمكن من تسجيل الدخول باستخدام هذا الحساب. هل تريد المتابعة؟',
+    oauthFeatures: 'معلومات تسجيل الدخول عبر الطرف الثالث',
+    oauthFeatureDesc: 'بعد ربط حسابات الطرف الثالث، يمكنك تسجيل الدخول بسرعة دون حفظ كلمات مرور معقدة',
+    oauthBindSuccess: 'تم ربط حساب الطرف الثالث بنجاح',
+    oauthBindFailed: 'فشل ربط حساب الطرف الثالث',
+    oauthUnbindSuccess: 'تم إلغاء ربط حساب الطرف الثالث بنجاح',
+    oauthUnbindFailed: 'فشل إلغاء ربط حساب الطرف الثالث',
+    loadOAuthFailed: 'فشل تحميل معلومات حساب الطرف الثالث',
+
+    // عام
+    fillAllFields: 'يرجى ملء جميع الحقول المطلوبة',
+    enterPassword: 'يرجى إدخال كلمة المرور',
+
     themes: {
       defaultGreen: 'أخضر افتراضي',
       darkGreen: 'أخضر داكن',

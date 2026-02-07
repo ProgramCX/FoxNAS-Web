@@ -131,6 +131,10 @@ export default {
     forgotUsername: 'Forgot Username',
     orLoginWith: 'Or login with',
     loginWithGitHub: 'Login with GitHub',
+    // Email login related
+    emailLogin: 'Email Login',
+    passwordLogin: 'Password',
+    codeLogin: 'Verification Code',
   },
 
   // Forgot Password Page
@@ -538,6 +542,49 @@ export default {
       red: 'Red',
       darkRed: 'Dark Red',
     },
+
+    // Email Binding
+    emailSettings: 'Email Binding',
+    emailBound: 'Email Bound',
+    emailNotBound: 'Email Not Bound',
+    emailBindHint: 'Bind your email to recover password and receive notifications',
+    bindEmail: 'Bind Email',
+    unbindEmail: 'Unbind Email',
+    emailFeatures: 'Email Features',
+    emailFeature1: 'Recover username and password',
+    emailFeature2: 'Receive system notifications and security alerts',
+    emailFeature3: 'Improve account security',
+    unbindEmailWarning: 'After unbinding, you will not be able to recover password via email. Continue?',
+    emailBindSuccess: 'Email bound successfully',
+    emailBindFailed: 'Failed to bind email',
+    emailUnbindSuccess: 'Email unbound successfully',
+    emailUnbindFailed: 'Failed to unbind email',
+    loadEmailFailed: 'Failed to load email info',
+    noEmailToSend: 'No email available to send verification code',
+
+    // OAuth Binding
+    oauthSettings: 'Third-Party Accounts',
+    oauthProviders: 'Third-Party Login Methods',
+    bound: 'Bound',
+    notBound: 'Not Bound',
+    bind: 'Bind',
+    unbind: 'Unbind',
+    goToBind: 'Go to Bind',
+    bindOAuthTitle: 'Bind {provider}',
+    bindOAuthDesc: 'After binding {provider}, you can quickly login with your {provider} account',
+    unbindOAuthTitle: 'Unbind {provider}',
+    unbindOAuthDesc: 'After unbinding {provider}, you will not be able to login with this account. Continue?',
+    oauthFeatures: 'Third-Party Login Info',
+    oauthFeatureDesc: 'After binding third-party accounts, you can quickly login without remembering complex passwords',
+    oauthBindSuccess: 'Third-party account bound successfully',
+    oauthBindFailed: 'Failed to bind third-party account',
+    oauthUnbindSuccess: 'Third-party account unbound successfully',
+    oauthUnbindFailed: 'Failed to unbind third-party account',
+    loadOAuthFailed: 'Failed to load third-party account info',
+
+    // Common
+    fillAllFields: 'Please fill in all required fields',
+    enterPassword: 'Please enter your password',
   },
 
   // Media Player

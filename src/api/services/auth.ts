@@ -25,6 +25,21 @@ interface OAuthActivateRequest {
   ticket: string
 }
 
+interface EmailLoginPasswordRequest {
+  email: string
+  password: string
+}
+
+interface EmailLoginCodeRequest {
+  email: string
+  code: string
+}
+
+interface TokenResponse {
+  accessToken: string
+  refreshToken: string
+}
+
 /**
  * OAuth 激活响应
  */
@@ -126,6 +141,26 @@ class AuthService {
    */
   async activateOAuthAccount(data: OAuthActivateRequest): Promise<OAuthActivateResponse> {
     return await http.post<OAuthActivateResponse>(apiEndpoints.oauth.activate, data)
+  }
+
+  /**
+   * 邮箱登录（密码方式）
+   * POST /api/auth/login/email
+   * @param data 邮箱和密码
+   * @returns 登录结果，包含 token
+   */
+  async loginByEmailWithPassword(data: EmailLoginPasswordRequest): Promise<TokenResponse> {
+    return await http.post<TokenResponse>(apiEndpoints.auth.loginByEmailPassword, data)
+  }
+
+  /**
+   * 邮箱登录（验证码方式）
+   * POST /api/auth/login/email/code
+   * @param data 邮箱和验证码
+   * @returns 登录结果，包含 token
+   */
+  async loginByEmailWithCode(data: EmailLoginCodeRequest): Promise<TokenResponse> {
+    return await http.post<TokenResponse>(apiEndpoints.auth.loginByEmailCode, data)
   }
 }
 

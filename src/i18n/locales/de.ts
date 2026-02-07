@@ -139,6 +139,9 @@ export default {
     initFailed: 'Initialisierung fehlgeschlagen',
     registerSuccess: 'Registrierung erfolgreich, bitte melden Sie sich an',
     forgottenUsername: 'Benutzername vergessen',
+    emailLogin: 'E-Mail-Anmeldung',
+    passwordLogin: 'Passwort',
+    codeLogin: 'Bestätigungscode',
   },
 
   // Seite Passwort vergessen
@@ -428,6 +431,50 @@ export default {
     confirmPassword: 'Passwort bestätigen',
     passwordChanged: 'Passwort erfolgreich geändert',
     passwordChangeFailed: 'Passwortänderung fehlgeschlagen',
+
+    // E-Mail-Bindung
+    emailSettings: 'E-Mail-Verknüpfung',
+    emailBound: 'E-Mail Verknüpft',
+    emailNotBound: 'E-Mail Nicht Verknüpft',
+    emailBindHint: 'Verknüpfen Sie Ihre E-Mail, um Ihr Passwort wiederherzustellen und Benachrichtigungen zu erhalten',
+    bindEmail: 'E-Mail Verknüpfen',
+    unbindEmail: 'E-Mail Entknüpfen',
+    emailFeatures: 'E-Mail-Funktionen',
+    emailFeature1: 'Benutzername und Passwort wiederherstellen',
+    emailFeature2: 'Systembenachrichtigungen und Sicherheitswarnungen erhalten',
+    emailFeature3: 'Kontosicherheit verbessern',
+    unbindEmailWarning: 'Nach dem Entknüpfen können Sie Ihr Passwort nicht mehr per E-Mail wiederherstellen. Fortfahren?',
+    emailBindSuccess: 'E-Mail erfolgreich verknüpft',
+    emailBindFailed: 'E-Mail-Verknüpfung fehlgeschlagen',
+    emailUnbindSuccess: 'E-Mail erfolgreich entknüpft',
+    emailUnbindFailed: 'E-Mail-Entknüpfung fehlgeschlagen',
+    loadEmailFailed: 'E-Mail-Informationen konnten nicht geladen werden',
+    noEmailToSend: 'Keine E-Mail verfügbar, um den Bestätigungscode zu senden',
+
+    // OAuth-Bindung
+    oauthSettings: 'Drittanbieter-Konten',
+    oauthProviders: 'Drittanbieter-Anmeldemethoden',
+    bound: 'Verknüpft',
+    notBound: 'Nicht Verknüpft',
+    bind: 'Verknüpfen',
+    unbind: 'Entknüpfen',
+    goToBind: 'Zur Verknüpfung',
+    bindOAuthTitle: '{provider} Verknüpfen',
+    bindOAuthDesc: 'Nach der Verknüpfung von {provider} können Sie sich schnell mit Ihrem {provider}-Konto anmelden',
+    unbindOAuthTitle: '{provider} Entknüpfen',
+    unbindOAuthDesc: 'Nach der Entknüpfung von {provider} können Sie sich nicht mehr mit diesem Konto anmelden. Fortfahren?',
+    oauthFeatures: 'Drittanbieter-Anmeldeinformationen',
+    oauthFeatureDesc: 'Nach der Verknüpfung von Drittanbieter-Konten können Sie sich schnell anmelden, ohne komplexe Passwörter zu merken',
+    oauthBindSuccess: 'Drittanbieter-Konto erfolgreich verknüpft',
+    oauthBindFailed: 'Drittanbieter-Konto-Verknüpfung fehlgeschlagen',
+    oauthUnbindSuccess: 'Drittanbieter-Konto erfolgreich entknüpft',
+    oauthUnbindFailed: 'Drittanbieter-Konto-Entknüpfung fehlgeschlagen',
+    loadOAuthFailed: 'Drittanbieter-Konto-Informationen konnten nicht geladen werden',
+
+    // Allgemein
+    fillAllFields: 'Bitte füllen Sie alle Pflichtfelder aus',
+    enterPassword: 'Bitte geben Sie Ihr Passwort ein',
+
     themes: {
       defaultGreen: 'Standard-Grün',
       darkGreen: 'Dunkel-Grün',

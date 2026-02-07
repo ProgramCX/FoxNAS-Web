@@ -129,6 +129,10 @@ export default {
     initFailed: '初始化失敗',
     registerSuccess: '註冊成功，請登入',
     forgotUsername: '忘記用戶名',
+    // 郵箱登入相關
+    emailLogin: '郵箱登入',
+    passwordLogin: '密碼登入',
+    codeLogin: '驗證碼登入',
   },
 
   // 忘記密碼頁面
@@ -464,6 +468,50 @@ export default {
     confirmPassword: '確認密碼',
     passwordChanged: '密碼修改成功',
     passwordChangeFailed: '密碼修改失敗',
+
+    // 郵箱綁定
+    emailSettings: '郵箱綁定',
+    emailBound: '已綁定郵箱',
+    emailNotBound: '未綁定郵箱',
+    emailBindHint: '綁定郵箱後可用於找回密碼和接收通知',
+    bindEmail: '綁定郵箱',
+    unbindEmail: '解綁郵箱',
+    emailFeatures: '郵箱功能',
+    emailFeature1: '用於找回用戶名和密碼',
+    emailFeature2: '接收系統通知和安全提醒',
+    emailFeature3: '提高賬戶安全性',
+    unbindEmailWarning: '解綁郵箱後，您將無法通過郵箱找回密碼，確定要繼續嗎？',
+    emailBindSuccess: '郵箱綁定成功',
+    emailBindFailed: '郵箱綁定失敗',
+    emailUnbindSuccess: '郵箱解綁成功',
+    emailUnbindFailed: '郵箱解綁失敗',
+    loadEmailFailed: '加載郵箱信息失敗',
+    noEmailToSend: '沒有可發送驗證碼的郵箱',
+
+    // OAuth 綁定
+    oauthSettings: '第三方賬戶',
+    oauthProviders: '第三方登錄方式',
+    bound: '已綁定',
+    notBound: '未綁定',
+    bind: '綁定',
+    unbind: '解綁',
+    goToBind: '前往綁定',
+    bindOAuthTitle: '綁定 {provider}',
+    bindOAuthDesc: '綁定 {provider} 後，您可以使用 {provider} 賬號快速登錄',
+    unbindOAuthTitle: '解綁 {provider}',
+    unbindOAuthDesc: '解綁 {provider} 後，您將無法使用該賬號登錄，確定要繼續嗎？',
+    oauthFeatures: '第三方登錄說明',
+    oauthFeatureDesc: '綁定第三方賬號後，您可以使用這些賬號快速登錄，無需記憶複雜的密碼',
+    oauthBindSuccess: '第三方賬號綁定成功',
+    oauthBindFailed: '第三方賬號綁定失敗',
+    oauthUnbindSuccess: '第三方賬號解綁成功',
+    oauthUnbindFailed: '第三方賬號解綁失敗',
+    loadOAuthFailed: '加載第三方賬號信息失敗',
+
+    // 通用
+    fillAllFields: '請填寫所有必填項',
+    enterPassword: '請輸入密碼',
+
     themes: {
       defaultGreen: '預設綠',
       darkGreen: '暗色綠',

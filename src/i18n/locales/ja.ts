@@ -110,6 +110,9 @@ export default {
     initFailed: '初期化に失敗しました',
     registerSuccess: '登録成功、ログインしてください',
     forgottenUsername: 'ユーザー名を忘れた',
+    emailLogin: 'メールログイン',
+    passwordLogin: 'パスワード',
+    codeLogin: '認証コード',
   },
 
   // パスワードを忘れたページ
@@ -354,6 +357,50 @@ export default {
     confirmPassword: 'パスワードを確認',
     passwordChanged: 'パスワードを変更しました',
     passwordChangeFailed: 'パスワードの変更に失敗しました',
+
+    // メールバインディング
+    emailSettings: 'メール設定',
+    emailBound: 'メールバインド済み',
+    emailNotBound: 'メール未バインド',
+    emailBindHint: 'メールをバインドすると、パスワードの回復や通知の受信が可能になります',
+    bindEmail: 'メールをバインド',
+    unbindEmail: 'メールバインド解除',
+    emailFeatures: 'メール機能',
+    emailFeature1: 'ユーザー名とパスワードの回復',
+    emailFeature2: 'システム通知とセキュリティアラートの受信',
+    emailFeature3: 'アカウントセキュリティの向上',
+    unbindEmailWarning: 'メールバインドを解除すると、メールによるパスワード回復ができなくなります。続行しますか？',
+    emailBindSuccess: 'メールバインド成功',
+    emailBindFailed: 'メールバインド失敗',
+    emailUnbindSuccess: 'メールバインド解除成功',
+    emailUnbindFailed: 'メールバインド解除失敗',
+    loadEmailFailed: 'メール情報の読み込みに失敗',
+    noEmailToSend: '認証コードを送信できるメールがありません',
+
+    // OAuth バインディング
+    oauthSettings: 'サードパーティアカウント',
+    oauthProviders: 'サードパーティログイン方法',
+    bound: 'バインド済み',
+    notBound: '未バインド',
+    bind: 'バインド',
+    unbind: 'バインド解除',
+    goToBind: 'バインドへ',
+    bindOAuthTitle: '{provider} をバインド',
+    bindOAuthDesc: '{provider} をバインドすると、{provider} アカウントで素早くログインできます',
+    unbindOAuthTitle: '{provider} バインド解除',
+    unbindOAuthDesc: '{provider} バインドを解除すると、このアカウントでログインできなくなります。続行しますか？',
+    oauthFeatures: 'サードパーティログイン情報',
+    oauthFeatureDesc: 'サードパーティアカウントをバインドすると、複雑なパスワードを覚える必要なく素早くログインできます',
+    oauthBindSuccess: 'サードパーティアカウントのバインド成功',
+    oauthBindFailed: 'サードパーティアカウントのバインド失敗',
+    oauthUnbindSuccess: 'サードパーティアカウントのバインド解除成功',
+    oauthUnbindFailed: 'サードパーティアカウントのバインド解除失敗',
+    loadOAuthFailed: 'サードパーティアカウント情報の読み込みに失敗',
+
+    // 共通
+    fillAllFields: 'すべての必須項目を入力してください',
+    enterPassword: 'パスワードを入力してください',
+
     themes: {
       defaultGreen: 'デフォルトグリーン',
       darkGreen: 'ダークグリーン',

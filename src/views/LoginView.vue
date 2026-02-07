@@ -13,8 +13,74 @@
         <p class="subtitle">{{ t('app.subtitle') }}</p>
       </div>
 
-      <!-- 登录表单 -->
-      <n-form ref="formRef" :model="formData" :rules="rules" @submit.prevent="handleLogin">
+      <!-- 邮箱登录卡片 -->
+      <n-form v-if="isEmailLoginMode" ref="emailFormRef" :model="emailFormData" :rules="emailRules" @submit.prevent="handleEmailLoginSubmit">
+        <div class="mode-title">
+          <n-button quaternary circle size="small" @click="backToNormalLogin">
+            <template #icon>
+              <n-icon><ArrowBackOutline /></n-icon>
+            </template>
+          </n-button>
+          <span>{{ t('login.emailLogin') }}</span>
+        </div>
+
+        <n-form-item path="email" :label="t('login.email')">
+          <n-input v-model:value="emailFormData.email" :placeholder="t('login.emailPlaceholder')" size="large">
+            <template #prefix>
+              <n-icon>
+                <MailOutline />
+              </n-icon>
+            </template>
+          </n-input>
+        </n-form-item>
+
+        <!-- 登录方式切换 -->
+        <n-tabs v-model:value="emailLoginType" type="segment" class="email-login-tabs">
+          <n-tab-pane name="password" :tab="t('login.passwordLogin')">
+            <n-form-item path="password" :label="t('login.password')" style="margin-top: 16px;">
+              <n-input v-model:value="emailFormData.password" type="password" :placeholder="t('login.passwordPlaceholder')"
+                size="large" show-password-on="click">
+                <template #prefix>
+                  <n-icon>
+                    <LockClosedOutline />
+                  </n-icon>
+                </template>
+              </n-input>
+            </n-form-item>
+          </n-tab-pane>
+          <n-tab-pane name="code" :tab="t('login.codeLogin')">
+            <n-form-item path="code" :label="t('login.verifyCode')" style="margin-top: 16px;">
+              <n-input-group>
+                <n-input v-model:value="emailFormData.code" :placeholder="t('login.verifyCodePlaceholder')" size="large">
+                  <template #prefix>
+                    <n-icon>
+                      <KeyOutline />
+                    </n-icon>
+                  </template>
+                </n-input>
+                <n-button size="large" :disabled="emailCountdown > 0" @click="sendEmailVerificationCode" :loading="sendingEmailCode">
+                  {{ emailCountdown > 0 ? `${emailCountdown}s` : t('login.getVerifyCode') }}
+                </n-button>
+              </n-input-group>
+            </n-form-item>
+          </n-tab-pane>
+        </n-tabs>
+
+        <!-- 错误提示 -->
+        <n-alert v-if="emailErrorMessage" type="error" class="error-alert" :show-icon="true">
+          {{ emailErrorMessage }}
+        </n-alert>
+
+        <!-- 登录按钮 -->
+        <n-form-item>
+          <n-button type="primary" size="large" block :loading="emailLoading" :disabled="emailLoading" @click="handleEmailLoginSubmit">
+            {{ t('login.loginButton') }}
+          </n-button>
+        </n-form-item>
+      </n-form>
+
+      <!-- 普通登录/注册表单 -->
+      <n-form v-else ref="formRef" :model="formData" :rules="rules" @submit.prevent="handleLogin">
         <n-form-item path="username" :label="t('login.username')">
           <n-input v-model:value="formData.username" :placeholder="t('login.usernamePlaceholder')" size="large"
             :input-props="{ autocomplete: 'username' }">
@@ -152,7 +218,7 @@
       </n-form>
 
       <!-- 初始化管理员提示 -->
-      <div v-if="showInitAdmin" class="init-admin-section">
+      <div v-if="showInitAdmin && !isEmailLoginMode" class="init-admin-section">
         <n-divider />
         <p class="init-tip">{{ t('login.initAdminTip') }}</p>
         <n-button type="info" block @click="initAdmin" :loading="initingAdmin">
@@ -187,6 +253,7 @@ import {
   LockClosedOutline,
   KeyOutline,
   MailOutline,
+  ArrowBackOutline,
 } from '@vicons/ionicons5'
 import { LogoGithub, Mail } from '@vicons/ionicons5'
 import MicrosoftIcon from '@/assets/microsoft-color.svg'
@@ -196,7 +263,7 @@ const route = useRoute()
 const message = useMessage()
 const authStore = useAuthStore()
 
-// 表单数据
+// 普通表单数据
 const formData = reactive({
   username: '',
   password: '',
@@ -205,7 +272,14 @@ const formData = reactive({
   code: '',
 })
 
-// 表单验证规则
+// 邮箱登录表单数据
+const emailFormData = reactive({
+  email: '',
+  password: '',
+  code: '',
+})
+
+// 普通表单验证规则
 const rules = computed(() => ({
   username: [
     { required: true, message: t('login.usernameRequired'), trigger: 'blur' },
@@ -233,6 +307,22 @@ const rules = computed(() => ({
   ],
 }))
 
+// 邮箱登录表单验证规则
+const emailRules = computed(() => ({
+  email: [
+    { required: true, message: t('validation.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('validation.email'), trigger: 'blur' },
+  ],
+  password: [
+    { required: emailLoginType.value === 'password', message: t('login.passwordRequired'), trigger: 'blur' },
+    { min: 6, message: t('validation.passwordMinLength'), trigger: 'blur' },
+  ],
+  code: [
+    { required: emailLoginType.value === 'code', message: t('validation.verifyCodeRequired'), trigger: 'blur' },
+    { len: 6, message: t('validation.verifyCodeLength'), trigger: 'blur' },
+  ],
+}))
+
 // 状态
 const loading = ref(false)
 const errorMessage = ref('')
@@ -243,7 +333,94 @@ const sendingCode = ref(false)
 const countdown = ref(0)
 let countdownTimer: number | null = null
 
+// 邮箱登录状态
+const isEmailLoginMode = ref(false)
+const emailLoginType = ref<'password' | 'code'>('password')
+const emailLoading = ref(false)
+const emailErrorMessage = ref('')
+const sendingEmailCode = ref(false)
+const emailCountdown = ref(0)
+let emailCountdownTimer: number | null = null
+
 const formRef = ref()
+const emailFormRef = ref()
+
+// 切换到邮箱登录模式
+function handleEmailLogin() {
+  isEmailLoginMode.value = true
+  emailErrorMessage.value = ''
+  // 如果普通表单有邮箱，自动填充
+  if (formData.email) {
+    emailFormData.email = formData.email
+  }
+}
+
+// 返回普通登录
+function backToNormalLogin() {
+  isEmailLoginMode.value = false
+  emailErrorMessage.value = ''
+  emailFormData.password = ''
+  emailFormData.code = ''
+}
+
+// 发送邮箱登录验证码
+async function sendEmailVerificationCode() {
+  if (!emailFormData.email) {
+    message.error(t('validation.emailRequired'))
+    return
+  }
+
+  sendingEmailCode.value = true
+  try {
+    await authStore.sendVerifyCode(emailFormData.email)
+    message.success(t('login.verifyCodeSent'))
+    emailCountdown.value = 60
+    emailCountdownTimer = window.setInterval(() => {
+      emailCountdown.value--
+      if (emailCountdown.value <= 0) {
+        if (emailCountdownTimer) clearInterval(emailCountdownTimer)
+      }
+    }, 1000)
+  } catch (error: unknown) {
+    const err = error as Error
+    message.error(err.message || t('login.sendVerifyCodeFailed'))
+  } finally {
+    sendingEmailCode.value = false
+  }
+}
+
+// 处理邮箱登录提交
+async function handleEmailLoginSubmit() {
+  // 验证表单
+  try {
+    await emailFormRef.value?.validate()
+  } catch {
+    return
+  }
+
+  emailLoading.value = true
+  emailErrorMessage.value = ''
+
+  try {
+    if (emailLoginType.value === 'password') {
+      // 邮箱+密码登录
+      await authStore.loginByEmailWithPassword(emailFormData.email, emailFormData.password)
+    } else {
+      // 邮箱+验证码登录
+      await authStore.loginByEmailWithCode(emailFormData.email, emailFormData.code)
+    }
+    message.success(t('login.loginSuccess'))
+
+    // 跳转到重定向页面或首页
+    const redirect = route.query.redirect as string
+    router.push(redirect || '/')
+  } catch (error: unknown) {
+    const err = error as { message?: string; status?: number }
+    emailErrorMessage.value = t('login.loginFailed')
+  } finally {
+    emailLoading.value = false
+  }
+}
 
 // 切换登录/注册模式
 function toggleMode() {
@@ -334,11 +511,6 @@ function handleMicrosoftLogin() {
   goOauthLogin('microsoft')
 }
 
-// 邮箱登录
-function handleEmailLogin() {
-  
-}
-
 // 处理登录
 async function handleLogin() {
   // 验证表单
@@ -384,6 +556,7 @@ async function handleLogin() {
 // 组件卸载时清理定时器
 onUnmounted(() => {
   if (countdownTimer) clearInterval(countdownTimer)
+  if (emailCountdownTimer) clearInterval(emailCountdownTimer)
 })
 
 // 组件挂载时检查是否需要初始化管理员
@@ -479,15 +652,21 @@ onMounted(async () => {
   gap: 12px;
 }
 
-
-
-/* .github-btn:hover {
-  background-color: #2f363d;
+/* 邮箱登录模式标题 */
+.mode-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color-base);
 }
 
-.github-btn:active {
-  background-color: #1b1f23;
-} */
+/* 邮箱登录选项卡 */
+.email-login-tabs {
+  margin-bottom: 8px;
+}
 
 .init-admin-section {
   margin-top: 16px;
@@ -560,6 +739,5 @@ body.dark .login-container {
 body.dark .login-card {
   background: #242428;
 }
-
 
 </style>

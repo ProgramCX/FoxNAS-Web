@@ -161,6 +161,91 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 通过 UUID 获取用户信息（用户名）
+   * @param uuid 用户 UUID
+   * @returns 用户名
+   */
+  async function fetchUsernameByUuid(uuid: string): Promise<string | null> {
+    try {
+      const response = await http.get<{ userName: string; state: string }>(apiEndpoints.common.userInfo, {
+        uuid
+      })
+      if (response && response.userName) {
+        return response.userName
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  /**
+   * 邮箱登录（密码方式）
+   * @param email 邮箱地址
+   * @param password 密码
+   */
+  async function loginByEmailWithPassword(email: string, password: string): Promise<void> {
+    const response = await http.post<{ accessToken: string; refreshToken: string }>(apiEndpoints.auth.loginByEmailPassword, { email, password })
+    
+    if (response && response.accessToken) {
+      token.value = response.accessToken
+      localStorage.setItem(apiConfig.tokenKey, response.accessToken)
+      
+      if (response.refreshToken) {
+        localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken)
+      }
+      
+      // 获取用户信息（UUID）
+      await fetchUserInfo()
+      
+      // 获取用户名并存储到 localStorage
+      const currentUuid = userUuid.value
+      if (currentUuid) {
+        const username = await fetchUsernameByUuid(currentUuid)
+        if (username) {
+          saveUserInfoToLocalStorage(currentUuid, username)
+        }
+      }
+      
+      // 获取用户权限
+      await fetchPermissions()
+    }
+  }
+
+  /**
+   * 邮箱登录（验证码方式）
+   * @param email 邮箱地址
+   * @param code 验证码
+   */
+  async function loginByEmailWithCode(email: string, code: string): Promise<void> {
+    const response = await http.post<{ accessToken: string; refreshToken: string }>(apiEndpoints.auth.loginByEmailCode, { email, code })
+    
+    if (response && response.accessToken) {
+      token.value = response.accessToken
+      localStorage.setItem(apiConfig.tokenKey, response.accessToken)
+      
+      if (response.refreshToken) {
+        localStorage.setItem(apiConfig.refreshTokenKey, response.refreshToken)
+      }
+      
+      // 获取用户信息（UUID）
+      await fetchUserInfo()
+      
+      // 获取用户名并存储到 localStorage
+      const currentUuid = userUuid.value
+      if (currentUuid) {
+        const username = await fetchUsernameByUuid(currentUuid)
+        if (username) {
+          saveUserInfoToLocalStorage(currentUuid, username)
+        }
+      }
+      
+      // 获取用户权限
+      await fetchPermissions()
+    }
+  }
+
+  /**
    * 解析 JWT Payload
    */
   function parseJwtPayload(token: string): Record<string, unknown> | null {
@@ -236,6 +321,9 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens,
     initialize,
     saveUserInfoToLocalStorage,
+    loginByEmailWithPassword,
+    loginByEmailWithCode,
+    fetchUsernameByUuid,
   }
 })
 

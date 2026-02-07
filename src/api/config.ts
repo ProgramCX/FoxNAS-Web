@@ -39,6 +39,8 @@ export const apiEndpoints = {
     refresh: '/auth/refresh',
     resetPassword: '/auth/password/reset',
     retrieveUsername: '/auth/username/retrieve',
+    loginByEmailPassword: '/auth/login/email',
+    loginByEmailCode: '/auth/login/email/code',
   },
   // OAuth 相关
   oauth: {
@@ -107,6 +109,17 @@ export const apiEndpoints = {
     changePassword: '/user-self/changePassword',
     changeUserName: '/user-self/changeUserName',
   },
+  // 用户设置（邮箱绑定、OAuth 绑定）
+  userSettings: {
+    // 邮箱相关
+    getEmail: '/auth/email',
+    bindEmail: '/auth/email/bind',
+    unbindEmail: '/auth/email/unbind',
+    // OAuth 相关
+    getBindedOAuthInfo: '/auth/oauth/getBindedOAuthInfo',
+    bindOAuth: '/auth/oauth/bindOAuth',
+    unbindOAuth: '/auth/oauth/unBindOAuth',
+  },
   // DDNS 配置
   ddns: {
     config: {
@@ -132,6 +145,7 @@ export const apiEndpoints = {
   // 公共接口
   common: {
     permissions: '/common/permissionsByUuid',
+    userInfo: '/common/userInfo',
   },
   // 日志管理
   log: {

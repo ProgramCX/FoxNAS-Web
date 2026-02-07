@@ -139,6 +139,9 @@ export default {
     initFailed: 'Falha na inicialização',
     registerSuccess: 'Registro bem-sucedido, por favor faça login',
     forgottenUsername: 'Esqueceu o nome de usuário',
+    emailLogin: 'Login por E-mail',
+    passwordLogin: 'Senha',
+    codeLogin: 'Código de Verificação',
   },
 
   // Página Esqueceu a Senha
@@ -382,7 +385,51 @@ export default {
     newPassword: 'Nova Senha',
     confirmPassword: 'Confirmar Senha',
     passwordChanged: 'Senha alterada com sucesso',
-    passwordChangeFailed: 'Falha ao alterar senha',
+    passwordChangeFailed: 'Falha ao alterar a senha',
+
+    // Vinculação de Email
+    emailSettings: 'Vinculação de Email',
+    emailBound: 'Email Vinculado',
+    emailNotBound: 'Email Não Vinculado',
+    emailBindHint: 'Vincule seu email para recuperar a senha e receber notificações',
+    bindEmail: 'Vincular Email',
+    unbindEmail: 'Desvincular Email',
+    emailFeatures: 'Funcionalidades do Email',
+    emailFeature1: 'Recuperar nome de usuário e senha',
+    emailFeature2: 'Receber notificações do sistema e alertas de segurança',
+    emailFeature3: 'Melhorar a segurança da conta',
+    unbindEmailWarning: 'Após desvincular, você não poderá recuperar a senha por email. Continuar?',
+    emailBindSuccess: 'Email vinculado com sucesso',
+    emailBindFailed: 'Falha ao vincular email',
+    emailUnbindSuccess: 'Email desvinculado com sucesso',
+    emailUnbindFailed: 'Falha ao desvincular email',
+    loadEmailFailed: 'Falha ao carregar informações do email',
+    noEmailToSend: 'Nenhum email disponível para enviar código de verificação',
+
+    // Vinculação OAuth
+    oauthSettings: 'Contas de Terceiros',
+    oauthProviders: 'Métodos de Login de Terceiros',
+    bound: 'Vinculado',
+    notBound: 'Não Vinculado',
+    bind: 'Vincular',
+    unbind: 'Desvincular',
+    goToBind: 'Ir para Vinculação',
+    bindOAuthTitle: 'Vincular {provider}',
+    bindOAuthDesc: 'Após vincular {provider}, você pode fazer login rapidamente com sua conta {provider}',
+    unbindOAuthTitle: 'Desvincular {provider}',
+    unbindOAuthDesc: 'Após desvincular {provider}, você não poderá fazer login com esta conta. Continuar?',
+    oauthFeatures: 'Informações de Login de Terceiros',
+    oauthFeatureDesc: 'Após vincular contas de terceiros, você pode fazer login rapidamente sem memorizar senhas complexas',
+    oauthBindSuccess: 'Conta de terceiros vinculada com sucesso',
+    oauthBindFailed: 'Falha ao vincular conta de terceiros',
+    oauthUnbindSuccess: 'Conta de terceiros desvinculada com sucesso',
+    oauthUnbindFailed: 'Falha ao desvincular conta de terceiros',
+    loadOAuthFailed: 'Falha ao carregar informações da conta de terceiros',
+
+    // Comum
+    fillAllFields: 'Por favor, preencha todos os campos obrigatórios',
+    enterPassword: 'Por favor, digite sua senha',
+
     themes: {
       defaultGreen: 'Verde Padrão',
       darkGreen: 'Verde Escuro',

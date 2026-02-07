@@ -139,6 +139,9 @@ export default {
     initFailed: "Échec de l'initialisation",
     registerSuccess: "Inscription réussie, veuillez vous connecter",
     forgotUsername: "Nom d'utilisateur oublié",
+    emailLogin: 'Connexion par e-mail',
+    passwordLogin: 'Mot de passe',
+    codeLogin: 'Code de vérification',
   },
 
   // Page Mot de passe oublié
@@ -428,6 +431,50 @@ export default {
     confirmPassword: 'Confirmer le mot de passe',
     passwordChanged: 'Mot de passe modifié avec succès',
     passwordChangeFailed: 'Échec de la modification du mot de passe',
+
+    // Liaison email
+    emailSettings: 'Liaison Email',
+    emailBound: 'Email Lié',
+    emailNotBound: 'Email Non Lié',
+    emailBindHint: 'Liez votre email pour récupérer votre mot de passe et recevoir des notifications',
+    bindEmail: 'Lier Email',
+    unbindEmail: 'Délier Email',
+    emailFeatures: 'Fonctionnalités Email',
+    emailFeature1: 'Récupérer le nom d\'utilisateur et le mot de passe',
+    emailFeature2: 'Recevoir les notifications système et alertes de sécurité',
+    emailFeature3: 'Améliorer la sécurité du compte',
+    unbindEmailWarning: 'Après déliaison, vous ne pourrez plus récupérer votre mot de passe par email. Continuer?',
+    emailBindSuccess: 'Email lié avec succès',
+    emailBindFailed: 'Échec de la liaison email',
+    emailUnbindSuccess: 'Email délié avec succès',
+    emailUnbindFailed: 'Échec de la déliaison email',
+    loadEmailFailed: 'Échec du chargement des informations email',
+    noEmailToSend: 'Aucun email disponible pour envoyer le code de vérification',
+
+    // Liaison OAuth
+    oauthSettings: 'Comptes Tiers',
+    oauthProviders: 'Méthodes de Connexion Tiers',
+    bound: 'Lié',
+    notBound: 'Non Lié',
+    bind: 'Lier',
+    unbind: 'Délier',
+    goToBind: 'Aller Lier',
+    bindOAuthTitle: 'Lier {provider}',
+    bindOAuthDesc: 'Après avoir lié {provider}, vous pouvez vous connecter rapidement avec votre compte {provider}',
+    unbindOAuthTitle: 'Délier {provider}',
+    unbindOAuthDesc: 'Après déliaison de {provider}, vous ne pourrez plus vous connecter avec ce compte. Continuer?',
+    oauthFeatures: 'Informations de Connexion Tiers',
+    oauthFeatureDesc: 'Après avoir lié des comptes tiers, vous pouvez vous connecter rapidement sans mémoriser de mots de passe complexes',
+    oauthBindSuccess: 'Compte tiers lié avec succès',
+    oauthBindFailed: 'Échec de la liaison du compte tiers',
+    oauthUnbindSuccess: 'Compte tiers délié avec succès',
+    oauthUnbindFailed: 'Échec de la déliaison du compte tiers',
+    loadOAuthFailed: 'Échec du chargement des informations du compte tiers',
+
+    // Commun
+    fillAllFields: 'Veuillez remplir tous les champs obligatoires',
+    enterPassword: 'Veuillez entrer votre mot de passe',
+
     themes: {
       defaultGreen: 'Vert par défaut',
       darkGreen: 'Vert sombre',

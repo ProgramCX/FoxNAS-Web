@@ -130,7 +130,10 @@ export default {
     registerSuccess: '注册成功，请登录',
     forgotUsername: '忘记用户名',
     orLoginWith: '或通过以下方式登录',
-    // loginWithGitHub: '使用 GitHub 登录',
+    // 邮箱登录相关
+    emailLogin: '邮箱登录',
+    passwordLogin: '密码登录',
+    codeLogin: '验证码登录',
   },
 
   // 忘记密码页面
@@ -530,6 +533,49 @@ export default {
     confirmPassword: '确认密码',
     passwordChanged: '密码修改成功',
     passwordChangeFailed: '密码修改失败',
+
+    // 邮箱绑定
+    emailSettings: '邮箱绑定',
+    emailBound: '已绑定邮箱',
+    emailNotBound: '未绑定邮箱',
+    emailBindHint: '绑定邮箱后可以用于找回密码和接收通知',
+    bindEmail: '绑定邮箱',
+    unbindEmail: '解绑邮箱',
+    emailFeatures: '邮箱功能',
+    emailFeature1: '用于找回用户名和密码',
+    emailFeature2: '接收系统通知和安全提醒',
+    emailFeature3: '提高账户安全性',
+    unbindEmailWarning: '解绑邮箱后，您将无法通过邮箱找回密码，确定要继续吗？',
+    emailBindSuccess: '邮箱绑定成功',
+    emailBindFailed: '邮箱绑定失败',
+    emailUnbindSuccess: '邮箱解绑成功',
+    emailUnbindFailed: '邮箱解绑失败',
+    loadEmailFailed: '加载邮箱信息失败',
+    noEmailToSend: '没有可发送验证码的邮箱',
+
+    // OAuth 绑定
+    oauthSettings: '第三方账户',
+    oauthProviders: '第三方登录方式',
+    bound: '已绑定',
+    notBound: '未绑定',
+    bind: '绑定',
+    unbind: '解绑',
+    goToBind: '前往绑定',
+    bindOAuthTitle: '绑定 {provider}',
+    bindOAuthDesc: '绑定 {provider} 后，您可以使用 {provider} 账号快速登录',
+    unbindOAuthTitle: '解绑 {provider}',
+    unbindOAuthDesc: '解绑 {provider} 后，您将无法使用该账号登录，确定要继续吗？',
+    oauthFeatures: '第三方登录说明',
+    oauthFeatureDesc: '绑定第三方账号后，您可以使用这些账号快速登录，无需记忆复杂的密码',
+    oauthBindSuccess: '第三方账号绑定成功',
+    oauthBindFailed: '第三方账号绑定失败',
+    oauthUnbindSuccess: '第三方账号解绑成功',
+    oauthUnbindFailed: '第三方账号解绑失败',
+    loadOAuthFailed: '加载第三方账号信息失败',
+
+    // 通用
+    fillAllFields: '请填写所有必填项',
+    enterPassword: '请输入密码',
   },
 
   // 媒体播放器
