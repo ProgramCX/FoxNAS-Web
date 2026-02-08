@@ -336,7 +336,7 @@ export default {
       taskName: 'タスク名を入力してください',
       taskDescription: 'タスクの説明を入力してください',
       ipAddress: 'IPアドレスを入力してください（空欄の場合は自動的に公IPを取得）',
-      domainRr: '例: www（空欄の場合は@を使用）',
+      domainRr:()=> '例: www（空欄の場合は@を使用）',
       mainDomain: 'メインドメインを入力してください（例: example.com）',
       selectAccessKey: 'アクセスキーを選択してください',
       accessKey: 'Access Keyを入力してください',

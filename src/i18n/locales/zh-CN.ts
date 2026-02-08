@@ -508,7 +508,7 @@ export default {
       taskName: '请输入任务名称',
       taskDescription: '请输入任务描述',
       ipAddress: '请输入IP地址，留空则自动获取公网IP',
-      domainRr: '如: www (为空则使用@)',
+      domainRr: ()=> '如: www (为空则使用@)',
       mainDomain: '请输入主域名，如: example.com',
       selectAccessKey: '请选择访问密钥',
       accessKey: '请输入Access Key',

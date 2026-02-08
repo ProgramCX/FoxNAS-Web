@@ -365,7 +365,7 @@ export default {
       taskName: 'Por favor, insira o nome da tarefa',
       taskDescription: 'Por favor, insira a descrição da tarefa',
       ipAddress: 'Por favor, insira o endereço IP (deixe vazio para detectar automaticamente o IP público)',
-      domainRr: 'ex., www (use @ se vazio)',
+      domainRr: ()=>'ex., www (use @ se vazio)',
       mainDomain: 'Por favor, insira o domínio principal, ex., example.com',
       selectAccessKey: 'Por favor, selecione a chave de acesso',
       accessKey: 'Por favor, insira a Access Key',

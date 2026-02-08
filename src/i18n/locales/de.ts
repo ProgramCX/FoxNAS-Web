@@ -387,7 +387,7 @@ export default {
     updateSuccess: 'DDNS-Eintrag erfolgreich aktualisiert',
     enterMainDomain: 'Bitte Hauptdomain eingeben',
     enterAccessKey: 'Zugriffsschlüssel auswählen',
-    domainRrHint: 'z.B., www (@ verwenden wenn leer)',
+    domainRrHint: ()=>'z.B., www (@ verwenden wenn leer)',
     mainDomainHint: 'z.B., example.com',
     keyName: 'Name',
     keyDescription: 'Beschreibung',

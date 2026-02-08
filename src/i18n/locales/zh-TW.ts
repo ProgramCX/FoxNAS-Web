@@ -447,7 +447,7 @@ export default {
       taskName: '請輸入任務名稱',
       taskDescription: '請輸入任務描述',
       ipAddress: '請輸入IP地址，留空則自動獲取公網IP',
-      domainRr: '如: www (為空則使用@)',
+      domainRr: ()=>'如: www (為空則使用@)',
       mainDomain: '請輸入主域名，如: example.com',
       selectAccessKey: '請選擇訪問密鑰',
       accessKey: '請輸入Access Key',

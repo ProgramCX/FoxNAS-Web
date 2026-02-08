@@ -1139,7 +1139,7 @@ async function downloadFile(file: FileInfo) {
     )
 
     downloadStore.completeTask(taskId)
-    message.success(t('files.downloadSuccess', { name: file.name }))
+    // message.success(t('files.downloadSuccess', { name: file.name }))
   } catch (error: unknown) {
     const err = error as Error
     if (err.message === 'Download cancelled' || abortController.signal.aborted) {

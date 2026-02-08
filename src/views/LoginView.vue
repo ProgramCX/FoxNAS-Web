@@ -191,13 +191,13 @@
               </template>
             </n-button>
 
-            <n-button @click="handleWeixinLogin" circle size="large" strong>
+            <!-- <n-button @click="handleWeixinLogin" circle size="large" strong>
               <template #icon>
                 <Icon color="#28c445" :size="24">
                   <Weixin />
                 </Icon>
               </template>
-            </n-button>
+            </n-button> -->
 
             <n-button @click="handleMicrosoftLogin" circle size="large" strong>
               <template #icon>

@@ -387,7 +387,7 @@ export default {
     updateSuccess: 'تم تحديث سجل DDNS بنجاح',
     enterMainDomain: 'الرجاء إدخال النطاق الرئيسي',
     enterAccessKey: 'اختر مفتاح الوصول',
-    domainRrHint: 'مثل: www (استخدم @ إذا كان فارغًا)',
+    domainRrHint:()=> 'مثل: www (استخدم @ إذا كان فارغًا)',
     mainDomainHint: 'مثل: example.com',
     keyName: 'الاسم',
     keyDescription: 'الوصف',

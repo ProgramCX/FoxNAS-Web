@@ -508,7 +508,7 @@ export default {
       taskName: 'Please enter task name',
       taskDescription: 'Please enter task description',
       ipAddress: 'Please enter IP address, leave empty to auto-detect public IP',
-      domainRr: 'e.g., www (use @ if empty)',
+      domainRr:()=> 'e.g., www (use @ if empty)',
       mainDomain: 'Please enter main domain, e.g., example.com',
       selectAccessKey: 'Please select access key',
       accessKey: 'Please enter Access Key',
