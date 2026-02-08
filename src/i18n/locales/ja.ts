@@ -238,6 +238,18 @@ export default {
     archive: 'アーカイブ',
     other: 'その他',
     folderEmpty: 'このフォルダは空です',
+    downloadSuccess: 'ダウンロード成功: {name}',
+    downloadFailed: 'ダウンロード失敗',
+    downloadCancelled: 'ダウンロードキャンセル: {name}',
+    uploadCancelled: 'アップロードキャンセル: {name}',
+    downloadingFolder: 'フォルダ "{name}" をダウンロード中...',
+    downloading: 'ダウンロード中',
+    transferProgress: '転送進捗',
+    downloadTasks: 'ダウンロードタスク',
+    uploadTasks: 'アップロードタスク',
+    noActiveTasks: '進行中のタスクなし',
+    clearCompleted: '完了済みをクリア',
+    cancelled: 'キャンセル済み',
   },
 
   // ユーザー管理

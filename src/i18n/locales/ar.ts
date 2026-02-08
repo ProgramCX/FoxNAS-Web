@@ -267,6 +267,18 @@ export default {
     archive: 'أرشيف',
     other: 'أخرى',
     folderEmpty: 'هذا المجلد فارغ',
+    downloadSuccess: 'تم التنزيل بنجاح: {name}',
+    downloadFailed: 'فشل التنزيل',
+    downloadCancelled: 'تم إلغاء التنزيل: {name}',
+    uploadCancelled: 'تم إلغاء الرفع: {name}',
+    downloadingFolder: 'جاري تحميل المجلد "{name}"...',
+    downloading: 'جاري التنزيل',
+    transferProgress: 'تقدم النقل',
+    downloadTasks: 'مهام التنزيل',
+    uploadTasks: 'مهام الرفع',
+    noActiveTasks: 'لا توجد مهام نشطة',
+    clearCompleted: 'مسح المكتمل',
+    cancelled: 'تم الإلغاء',
   },
 
   // إدارة المستخدمين

@@ -267,6 +267,18 @@ export default {
     archive: 'Arquivo Compactado',
     other: 'Outro',
     folderEmpty: 'Esta pasta está vazia',
+    downloadSuccess: 'Download concluído: {name}',
+    downloadFailed: 'Falha no download',
+    downloadCancelled: 'Download cancelado: {name}',
+    uploadCancelled: 'Upload cancelado: {name}',
+    downloadingFolder: 'Fazendo download da pasta "{name}"...',
+    downloading: 'Fazendo download',
+    transferProgress: 'Progresso da transferência',
+    downloadTasks: 'Tarefas de download',
+    uploadTasks: 'Tarefas de upload',
+    noActiveTasks: 'Nenhuma tarefa ativa',
+    clearCompleted: 'Limpar concluídas',
+    cancelled: 'Cancelado',
   },
 
   // Gerenciamento de usuários

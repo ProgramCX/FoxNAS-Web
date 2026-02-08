@@ -483,6 +483,9 @@
         <n-button type="primary" @click="createDirectory" :loading="creating">{{ t('files.create') }}</n-button>
       </template>
     </n-modal>
+
+    <!-- 悬浮传输按钮 -->
+    <FloatingTransferButton @click="showTransferDialog" />
   </div>
 </template>
 
@@ -492,6 +495,7 @@ import { useMessage, useDialog, useNotification, NButton, NIcon, NTag, NInput, N
 import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import DownloadProgressDialog from '@/components/DownloadProgressDialog.vue'
+import FloatingTransferButton from '@/components/FloatingTransferButton.vue'
 import { useDownloadProgressStore } from '@/stores/downloadProgress'
 import type { FileInfo, AuthedDir } from '@/types'
 import {
@@ -1090,8 +1094,31 @@ function ensureDownloadDialog() {
   }
 }
 
+function showTransferDialog() {
+  // 显示传输进度对话框
+  if (downloadDialogRef) {
+    // 如果对话框已存在，先销毁再创建新的
+    downloadDialogRef.destroy()
+    downloadDialogRef = null
+  }
+  
+  downloadDialogRef = dialog.create({
+    title: t('files.transferProgress'),
+    content: () => h(DownloadProgressDialog),
+    positiveText: t('common.close'),
+    onPositiveClick: () => {
+      downloadDialogRef = null
+      return true
+    },
+    onClose: () => {
+      downloadDialogRef = null
+    },
+  })
+}
+
 async function downloadFile(file: FileInfo) {
   const taskId = `${file.path}-${Date.now()}`
+  const abortController = new AbortController()
 
   try {
     if (file.type === 'directory') {
@@ -1099,7 +1126,7 @@ async function downloadFile(file: FileInfo) {
     }
 
     // 添加下载任务
-    downloadStore.addTask(taskId, file.name)
+    downloadStore.addTask(taskId, file.name, 'download', abortController)
     ensureDownloadDialog()
 
     await fileService.downloadFile(
@@ -1107,15 +1134,21 @@ async function downloadFile(file: FileInfo) {
       file.type === 'directory' ? `${file.name}.zip` : file.name,
       (loaded, total) => {
         downloadStore.updateProgress(taskId, loaded, total > 0 ? total : (file.size || 0))
-      }
+      },
+      abortController
     )
 
-    downloadStore.removeTask(taskId)
+    downloadStore.completeTask(taskId)
     message.success(t('files.downloadSuccess', { name: file.name }))
   } catch (error: unknown) {
-    downloadStore.removeTask(taskId)
     const err = error as Error
-    message.error(err.message || t('files.downloadFailed'))
+    if (err.message === 'Download cancelled' || abortController.signal.aborted) {
+      downloadStore.cancelTask(taskId)
+      message.info(t('files.downloadCancelled', { name: file.name }))
+    } else {
+      downloadStore.failTask(taskId, err.message)
+      message.error(err.message || t('files.downloadFailed'))
+    }
   }
 }
 
@@ -1362,10 +1395,11 @@ function getTargetDir(): string {
 async function uploadSingleFile(
   fileObj: File,
   targetPath: string,
-  onProgress?: (progress: number) => void
+  onProgress?: (progress: number) => void,
+  abortController?: AbortController
 ): Promise<boolean> {
   try {
-    await fileService.uploadFile(targetPath, fileObj, onProgress)
+    await fileService.uploadFile(targetPath, fileObj, onProgress, abortController)
     return true
   } catch {
     return false
@@ -1379,7 +1413,7 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
-  const fileId = file.id
+  const fileId = file.id || `${fileName}-${Date.now()}`
 
   const targetDir = getTargetDir()
   if (!targetDir) {
@@ -1389,27 +1423,43 @@ async function handleFileUpload(options: { file: { file: File; id?: string; name
   }
 
   const targetPath = targetDir === '/' ? `/${fileName}` : `${targetDir}/${fileName}`
+  
+  // 创建取消控制器
+  const abortController = new AbortController()
+  
+  // 添加到 store 管理
+  downloadStore.addTask(fileId, fileName, 'upload', abortController)
 
   // 更新进度的回调
   const updateProgressCallback = (progress: number) => {
-    console.log('progress:', progress)
+    // 更新到 store 用于速率计算
+    downloadStore.updateProgress(fileId, Math.round(fileObj.size * progress / 100), fileObj.size)
+    // 更新本地进度用于显示在对话框中
     updateUploadProgress(fileId, fileName, undefined, progress, progress >= 100 ? 'success' : 'default')
     onProgress(progress)
   }
 
   try {
-    await uploadSingleFile(fileObj, targetPath, updateProgressCallback)
+    await uploadSingleFile(fileObj, targetPath, updateProgressCallback, abortController)
     // 上传成功，更新状态
+    downloadStore.completeTask(fileId)
     updateUploadProgress(fileId, fileName, undefined, 100, 'success')
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
   } catch (error: unknown) {
-    // 上传失败，更新状态
-    updateUploadProgress(fileId, fileName, undefined, undefined, 'error')
-    uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    if (err.message === 'Upload cancelled' || abortController.signal.aborted) {
+      downloadStore.cancelTask(fileId)
+      updateUploadProgress(fileId, fileName, undefined, undefined, 'cancelled')
+      message.info(t('files.uploadCancelled', { name: fileName }))
+    } else {
+      downloadStore.failTask(fileId, err.message)
+      // 上传失败，更新状态
+      updateUploadProgress(fileId, fileName, undefined, undefined, 'error')
+      uploadFailedCount.value++
+      message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    }
     onError()
     checkUploadComplete()
   }
@@ -1440,7 +1490,7 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
-  const fileId = file.id
+  const fileId = file.id || `${fileName}-${Date.now()}`
 
   // 获取文件夹内的相对路径
   // Naive UI 使用 fullPath，原生 File API 使用 webkitRelativePath
@@ -1462,25 +1512,42 @@ async function handleDirectoryUpload(options: { file: { file: File; id?: string;
   const finalPath = relativePath || fileName
   const targetPath = targetDir === '/' ? `/${finalPath}` : `${targetDir}/${finalPath}`
 
+  // 创建取消控制器
+  const abortController = new AbortController()
+  
+  // 添加到 store 管理
+  downloadStore.addTask(fileId, fileName, 'upload', abortController)
+
   // 更新进度的回调
   const updateProgressCallback = (progress: number) => {
+    // 更新到 store 用于速率计算
+    downloadStore.updateProgress(fileId, Math.round(fileObj.size * progress / 100), fileObj.size)
+    // 更新本地进度用于显示在对话框中
     updateUploadProgress(fileId, fileName, relativePath, progress, progress >= 100 ? 'success' : 'default')
     onProgress(progress)
   }
 
   try {
-    await uploadSingleFile(fileObj, targetPath, updateProgressCallback)
+    await uploadSingleFile(fileObj, targetPath, updateProgressCallback, abortController)
     // 上传成功，更新状态
+    downloadStore.completeTask(fileId)
     updateUploadProgress(fileId, fileName, relativePath, 100, 'success')
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
   } catch (error: unknown) {
-    // 上传失败，更新状态
-    updateUploadProgress(fileId, fileName, relativePath, undefined, 'error')
-    uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    if (err.message === 'Upload cancelled' || abortController.signal.aborted) {
+      downloadStore.cancelTask(fileId)
+      updateUploadProgress(fileId, fileName, relativePath, undefined, 'cancelled')
+      message.info(t('files.uploadCancelled', { name: fileName }))
+    } else {
+      downloadStore.failTask(fileId, err.message)
+      // 上传失败，更新状态
+      updateUploadProgress(fileId, fileName, relativePath, undefined, 'error')
+      uploadFailedCount.value++
+      message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    }
     onError()
     checkUploadComplete()
   }
@@ -1521,7 +1588,7 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
   const { file, onProgress, onFinish, onError } = options
   const fileObj = file.file
   const fileName = file.name || fileObj?.name || t('media.unknownFile')
-  const fileId = file.id
+  const fileId = file.id || `${fileName}-${Date.now()}`
   
   const relativePath = file.path || ''
   const targetDir = getTargetDir()
@@ -1544,19 +1611,34 @@ async function handleUpload(options: { file: { file: File; id?: string; name?: s
   } else {
     targetPath = targetDir === '/' ? `/${fileName}` : `${targetDir}/${fileName}`
   }
+  
+  // 创建取消控制器
+  const abortController = new AbortController()
+  
+  // 添加到 store 管理
+  downloadStore.addTask(fileId, fileName, 'upload', abortController)
 
   try {
     await uploadSingleFile(fileObj, targetPath, (progress) => {
+      // 更新到 store 用于速率计算
+      downloadStore.updateProgress(fileId, Math.round(fileObj.size * progress / 100), fileObj.size)
       updateUploadProgress(fileId, fileName, undefined, progress, progress >= 100 ? 'success' : 'default')
       onProgress(progress)
-    })
+    }, abortController)
+    downloadStore.completeTask(fileId)
     uploadSuccessCount.value++
     onFinish()
     checkUploadComplete()
   } catch (error: unknown) {
-    uploadFailedCount.value++
     const err = error as Error
-    message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    if (err.message === 'Upload cancelled' || abortController.signal.aborted) {
+      downloadStore.cancelTask(fileId)
+      message.info(t('files.uploadCancelled', { name: fileName }))
+    } else {
+      downloadStore.failTask(fileId, err.message)
+      uploadFailedCount.value++
+      message.error(`${fileName}: ${err.message || t('files.uploadFailed')}`)
+    }
     onError()
     checkUploadComplete()
   }

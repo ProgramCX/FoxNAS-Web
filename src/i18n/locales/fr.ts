@@ -267,6 +267,18 @@ export default {
     archive: 'Archive',
     other: 'Autre',
     folderEmpty: 'Ce dossier est vide',
+    downloadSuccess: 'Téléchargement réussi: {name}',
+    downloadFailed: 'Échec du téléchargement',
+    downloadCancelled: 'Téléchargement annulé: {name}',
+    uploadCancelled: 'Téléversement annulé: {name}',
+    downloadingFolder: 'Téléchargement du dossier "{name}"...',
+    downloading: 'Téléchargement en cours',
+    transferProgress: 'Progression du transfert',
+    downloadTasks: 'Tâches de téléchargement',
+    uploadTasks: 'Tâches de téléversement',
+    noActiveTasks: 'Aucune tâche active',
+    clearCompleted: 'Effacer les terminées',
+    cancelled: 'Annulé',
   },
 
   // Gestion des utilisateurs

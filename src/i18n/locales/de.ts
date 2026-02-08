@@ -267,6 +267,18 @@ export default {
     archive: 'Archiv',
     other: 'Andere',
     folderEmpty: 'Dieser Ordner ist leer',
+    downloadSuccess: 'Download erfolgreich: {name}',
+    downloadFailed: 'Download fehlgeschlagen',
+    downloadCancelled: 'Download abgebrochen: {name}',
+    uploadCancelled: 'Upload abgebrochen: {name}',
+    downloadingFolder: 'Ordner "{name}" wird gepackt und heruntergeladen...',
+    downloading: 'Wird heruntergeladen',
+    transferProgress: 'Übertragungsfortschritt',
+    downloadTasks: 'Download-Aufgaben',
+    uploadTasks: 'Upload-Aufgaben',
+    noActiveTasks: 'Keine aktiven Aufgaben',
+    clearCompleted: 'Abgeschlossene löschen',
+    cancelled: 'Abgebrochen',
   },
 
   // Benutzerverwaltung

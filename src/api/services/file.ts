@@ -121,11 +121,13 @@ class FileService {
    * @param path 目标路径 (查询参数)
    * @param file 文件对象
    * @param onProgress 进度回调
+   * @param abortController 取消控制器
    */
   async uploadFile(
     path: string,
     file: File,
-    onProgress?: (total: number, completed: number) => void
+    onProgress?: (total: number, completed: number) => void,
+    abortController?: AbortController
   ): Promise<FileOperationResult> {
     const formData = new FormData()
     formData.append('file', file)
@@ -135,6 +137,15 @@ class FileService {
 
     return await new Promise<FileOperationResult>((resolve, reject) => {
       const xhr = new XMLHttpRequest()
+      
+      // 监听取消信号
+      if (abortController) {
+        abortController.signal.addEventListener('abort', () => {
+          xhr.abort()
+          reject(new Error('Upload cancelled'))
+        })
+      }
+
       xhr.open('POST', url, true)
 
       if (token) {
@@ -148,9 +159,9 @@ class FileService {
         const total = file.size
         if (total > 0) {
           const progress = Math.min(100, Math.round((event.loaded * 100) / total))
-          onProgress(progress)
+          onProgress(progress, 100)
         } else if (event.loaded > 0) {
-          onProgress(1)
+          onProgress(1, 100)
         }
       }
 
@@ -165,12 +176,20 @@ class FileService {
             reject(err as Error)
           }
         } else {
-          reject(new Error(xhr.statusText || 'Upload failed'))
+          if (xhr.status === 0) {
+            reject(new Error('Upload cancelled'))
+          } else {
+            reject(new Error(xhr.statusText || 'Upload failed'))
+          }
         }
       }
 
       xhr.onerror = () => {
         reject(new Error('Upload failed'))
+      }
+
+      xhr.onabort = () => {
+        reject(new Error('Upload cancelled'))
       }
 
       xhr.send(formData)
@@ -182,9 +201,76 @@ class FileService {
    * GET /api/file/op/get
    * @param path 文件路径
    * @param filename 下载文件名
+   * @param onProgress 进度回调
+   * @param abortController 取消控制器
    */
-  async downloadFile(path: string, filename?: string, onProgress?: (loaded: number, total: number) => void): Promise<void> {
-    await http.download(apiEndpoints.file.operation.get, { path }, filename, onProgress)
+  async downloadFile(
+    path: string, 
+    filename?: string, 
+    onProgress?: (loaded: number, total: number) => void,
+    abortController?: AbortController
+  ): Promise<void> {
+    const token = localStorage.getItem(apiConfig.tokenKey)
+    const url = `${apiConfig.baseURL}${apiEndpoints.file.operation.get}?path=${encodeURIComponent(path)}`
+
+    const response = await fetch(url, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      signal: abortController?.signal,
+    })
+
+    if (!response.ok) {
+      throw new Error(`下载失败: ${response.status} ${response.statusText}`)
+    }
+
+    const contentLength = response.headers.get('Content-Length')
+    const total = contentLength ? parseInt(contentLength, 10) : 0
+    const reader = response.body?.getReader()
+
+    if (!reader) {
+      throw new Error('无法读取响应流')
+    }
+
+    const chunks: Uint8Array[] = []
+    let loaded = 0
+
+    try {
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        chunks.push(value)
+        loaded += value.length
+
+        if (onProgress) {
+          onProgress(loaded, total)
+        }
+      }
+    } catch (error) {
+      if (abortController?.signal.aborted) {
+        throw new Error('Download cancelled')
+      }
+      throw error
+    }
+
+    // 合并所有 chunks
+    const allChunks = new Uint8Array(loaded)
+    let position = 0
+    for (const chunk of chunks) {
+      allChunks.set(chunk, position)
+      position += chunk.length
+    }
+
+    // 创建 blob 并下载
+    const blob = new Blob([allChunks])
+    const link = document.createElement('a')
+    link.href = window.URL.createObjectURL(blob)
+    link.download = filename || 'download'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(link.href)
   }
 
   /**

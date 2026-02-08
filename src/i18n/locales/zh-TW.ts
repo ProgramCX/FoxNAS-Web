@@ -299,6 +299,18 @@ export default {
     create: '建立',
     getFileListFailed: '獲取檔案列表失敗',
     folderEmpty: '此資料夾為空',
+    downloadSuccess: '{name} 下載成功',
+    downloadFailed: '下載失敗',
+    downloadCancelled: '{name} 下載已取消',
+    uploadCancelled: '{name} 上傳已取消',
+    downloadingFolder: '正在打包下載資料夾 "{name}"...',
+    downloading: '正在下載',
+    transferProgress: '傳輸進度',
+    downloadTasks: '下載任務',
+    uploadTasks: '上傳任務',
+    noActiveTasks: '沒有進行中的任務',
+    clearCompleted: '清除已完成',
+    cancelled: '已取消',
   },
 
   // 使用者管理

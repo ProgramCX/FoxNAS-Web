@@ -267,6 +267,18 @@ export default {
     archive: 'Архив',
     other: 'Другое',
     folderEmpty: 'Эта папка пуста',
+    downloadSuccess: 'Загрузка успешна: {name}',
+    downloadFailed: 'Ошибка загрузки',
+    downloadCancelled: 'Загрузка отменена: {name}',
+    uploadCancelled: 'Выгрузка отменена: {name}',
+    downloadingFolder: 'Загрузка папки "{name}"...',
+    downloading: 'Загрузка',
+    transferProgress: 'Прогресс передачи',
+    downloadTasks: 'Задачи загрузки',
+    uploadTasks: 'Задачи выгрузки',
+    noActiveTasks: 'Нет активных задач',
+    clearCompleted: 'Очистить завершённые',
+    cancelled: 'Отменено',
   },
 
   // Управление пользователями

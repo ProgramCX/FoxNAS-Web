@@ -302,8 +302,16 @@ export default {
     folderEmpty: '该文件夹为空',
     downloadSuccess: '{name} 下载成功',
     downloadFailed: '下载失败',
+    downloadCancelled: '{name} 下载已取消',
+    uploadCancelled: '{name} 上传已取消',
     downloadingFolder: '正在打包下载文件夹 "{name}"...',
     downloading: '正在下载',
+    transferProgress: '传输进度',
+    downloadTasks: '下载任务',
+    uploadTasks: '上传任务',
+    noActiveTasks: '没有进行中的任务',
+    clearCompleted: '清除已完成',
+    cancelled: '已取消',
   },
 
   // 用户管理

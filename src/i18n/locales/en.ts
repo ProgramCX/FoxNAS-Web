@@ -303,7 +303,16 @@ export default {
     folderEmpty: 'This folder is empty',
     downloadSuccess: 'Download successful',
     downloadFailed: 'Download failed',
+    downloadCancelled: '{name} download cancelled',
+    uploadCancelled: '{name} upload cancelled',
     downloadingFolder: 'Packing and downloading folder "{name}"...',
+    downloading: 'Downloading',
+    transferProgress: 'Transfer Progress',
+    downloadTasks: 'Download Tasks',
+    uploadTasks: 'Upload Tasks',
+    noActiveTasks: 'No active tasks',
+    clearCompleted: 'Clear Completed',
+    cancelled: 'Cancelled',
   },
 
   // User Management
