@@ -5,7 +5,6 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
-  assetsInclude: ['**/*.html'],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
