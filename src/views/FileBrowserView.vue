@@ -62,6 +62,7 @@ import { useMessage } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import type { FileInfo } from '@/types'
+import FilePreviewDialog from '@/components/preview/FilePreviewDialog.vue'
 import {
   FolderOutline,
   DocumentOutline,
@@ -81,6 +82,8 @@ const message = useMessage()
 // 状态
 const loading = ref(false)
 const fileList = ref<FileInfo[]>([])
+const showPreviewDialog = ref(false)
+const previewFile = ref<FileInfo | null>(null)
 const currentPath = computed(() => {
   const path = route.params.path as string
   return path ? '/' + path : '/'
@@ -148,19 +151,24 @@ function handleFileDoubleClick(file: FileInfo) {
   if (file.type === 'directory') {
     navigateTo(file.path)
   } else {
-    // 打开文件
-    window.open(fileService.getDownloadUrl(file.path), '_blank')
+    previewFile.value = file
+    showPreviewDialog.value = true
   }
+}
+
+// 下载文件回调
+function handleDownload(file: FileInfo) {
+  window.open(fileService.getDownloadUrl(file.path), '_blank')
 }
 
 // 获取文件图标
 function getFileIcon(file: FileInfo) {
   if (file.type === 'directory') return FolderOutline
   
-  const name = file.name.toLowerCase()
-  if (name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/)) return ImageOutline
-  if (name.match(/\.(mp4|avi|mkv|mov|wmv)$/)) return VideocamOutline
-  if (name.match(/\.(mp3|wav|flac|aac)$/)) return MusicalNotesOutline
+  const cat = file.category || 'other'
+  if (cat === 'image') return ImageOutline
+  if (cat === 'video') return VideocamOutline
+  if (cat === 'audio') return MusicalNotesOutline
   return DocumentOutline
 }
 
@@ -168,10 +176,10 @@ function getFileIcon(file: FileInfo) {
 function getFileIconColor(file: FileInfo) {
   if (file.type === 'directory') return '#18a058'
   
-  const name = file.name.toLowerCase()
-  if (name.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/)) return '#2080f0'
-  if (name.match(/\.(mp4|avi|mkv|mov|wmv)$/)) return '#f0a020'
-  if (name.match(/\.(mp3|wav|flac|aac)$/)) return '#d03050'
+  const cat = file.category || 'other'
+  if (cat === 'image') return '#2080f0'
+  if (cat === 'video') return '#f0a020'
+  if (cat === 'audio') return '#d03050'
   return '#606266'
 }
 

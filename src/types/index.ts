@@ -70,6 +70,11 @@ export interface UserResource {
 }
 
 /**
+ * 文件类别
+ */
+export type FileCategory = 'directory' | 'video' | 'audio' | 'image' | 'doc' | 'archive' | 'code' | 'other'
+
+/**
  * 文件相关类型
  */
 export interface FileInfo {
@@ -78,6 +83,14 @@ export interface FileInfo {
   size: number
   lastModified: number
   type: 'directory' | 'file'
+  /** MIME 类型 */
+  mime?: string
+  /** 文件类别：video / audio / image / doc / archive / code / other / directory */
+  category?: FileCategory
+  /** 浏览器是否可以原生播放/预览 */
+  canPlay?: boolean
+  /** 是否需要转码（仅视频类型且不可直接播放时为 true） */
+  needTranscode?: boolean
 }
 
 export interface AuthedDir {

@@ -486,6 +486,13 @@
 
     <!-- 悬浮传输按钮 -->
     <FloatingTransferButton @click="showTransferDialog" />
+
+    <!-- 文件预览对话框 -->
+    <FilePreviewDialog
+      v-model:show="showPreviewDialog"
+      :file="previewFile"
+      @download="downloadFile"
+    />
   </div>
 </template>
 
@@ -496,15 +503,18 @@ import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
 import DownloadProgressDialog from '@/components/DownloadProgressDialog.vue'
 import FloatingTransferButton from '@/components/FloatingTransferButton.vue'
+import FilePreviewDialog from '@/components/preview/FilePreviewDialog.vue'
 import { useDownloadProgressStore } from '@/stores/downloadProgress'
-import type { FileInfo, AuthedDir } from '@/types'
+import type { FileInfo, AuthedDir, FileCategory } from '@/types'
 import {
   CloudUploadOutline, AddOutline, RefreshOutline, HomeOutline, FolderOutline,
   DocumentOutline, TrashOutline, CreateOutline, DownloadOutline, LockClosedOutline,
   EyeOutline, InformationCircleOutline, CopyOutline, CutOutline, ClipboardOutline,
   ChevronBackOutline, ChevronForwardOutline, ArrowUpOutline, SearchOutline,
   OpenOutline, FolderOpenOutline,
-  EllipsisVerticalOutline
+  EllipsisVerticalOutline,
+  ImageOutline, VideocamOutline, MusicalNotesOutline, CodeSlashOutline,
+  ArchiveOutline, ReaderOutline
 } from '@vicons/ionicons5'
 import { format } from 'date-fns'
 
@@ -708,17 +718,33 @@ const contextMenuOptions = computed<DropdownOption[]>(() => {
 
 // ============ 表格列配置 ============
 const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
+  // 根据 category 获取文件图标和颜色
+  const getFileCategoryIcon = (row: FileInfo) => {
+    const cat = row.category || (row.type === 'directory' ? 'directory' : 'other')
+    const iconMap: Record<string, { icon: any; color: string }> = {
+      directory: { icon: FolderOutline, color: '#f0a020' },
+      image: { icon: ImageOutline, color: '#2080f0' },
+      video: { icon: VideocamOutline, color: '#f0a020' },
+      audio: { icon: MusicalNotesOutline, color: '#d03050' },
+      doc: { icon: ReaderOutline, color: '#18a058' },
+      code: { icon: CodeSlashOutline, color: '#722ed1' },
+      archive: { icon: ArchiveOutline, color: '#8c8c8c' },
+      other: { icon: DocumentOutline, color: '#909399' },
+    }
+    return iconMap[cat] || iconMap.other
+  }
+
   // 文件图标渲染函数
   const renderFileIcon = (row: FileInfo, size: number) => {
-    const isFolder = row.type === 'directory'
+    const { icon, color } = getFileCategoryIcon(row)
     return h('div', { 
-      class: ['file-icon-wrapper', isFolder ? 'folder-icon' : 'file-icon']
+      class: ['file-icon-wrapper', row.type === 'directory' ? 'folder-icon' : 'file-icon']
     }, [
       h(NIcon, { 
         size, 
-        color: isFolder ? '#f0a020' : '#909399'
+        color
       }, { 
-        default: () => h(isFolder ? FolderOutline : DocumentOutline) 
+        default: () => h(icon) 
       })
     ])
   }
@@ -786,8 +812,31 @@ const tableColumns = computed<DataTableColumns<FileInfo>>(() => {
     {
       title: t('files.fileType'),
       key: 'type',
-      width: 80,
-      render: (row) => h(NTag, { size: 'small', type: row.type === 'directory' ? 'info' : 'default' }, { default: () => row.type === 'directory' ? t('files.directory') : t('files.file') })
+      width: 100,
+      render: (row) => {
+        const cat = row.category || (row.type === 'directory' ? 'directory' : 'other')
+        const tagTypeMap: Record<string, 'default' | 'info' | 'success' | 'warning' | 'error'> = {
+          directory: 'info',
+          image: 'success',
+          video: 'warning',
+          audio: 'error',
+          doc: 'success',
+          code: 'default',
+          archive: 'default',
+          other: 'default',
+        }
+        const labelMap: Record<string, string> = {
+          directory: t('files.directory'),
+          image: t('files.image'),
+          video: t('files.video'),
+          audio: t('files.audio'),
+          doc: t('files.document'),
+          code: t('preview.code'),
+          archive: t('files.archive'),
+          other: t('files.other'),
+        }
+        return h(NTag, { size: 'small', type: tagTypeMap[cat] || 'default' }, { default: () => labelMap[cat] || cat })
+      }
     }
   ]
 })
@@ -1030,8 +1079,16 @@ function handleRowDoubleClick(row: FileInfo) {
   if (row.type === 'directory') {
     navigateToTabPath(row.path)
   } else {
-    downloadFile(row)
+    openFilePreview(row)
   }
+}
+
+/**
+ * 打开文件预览
+ */
+function openFilePreview(file: FileInfo) {
+  previewFile.value = file
+  showPreviewDialog.value = true
 }
 
 function showContextMenu(e: MouseEvent, row: FileInfo) {
@@ -1053,7 +1110,7 @@ function handleContextMenuSelect(key: string) {
       if (target.type === 'directory') {
         navigateToTabPath(target.path)
       } else {
-        downloadFile(target)
+        openFilePreview(target)
       }
       break
     case 'download':
@@ -1368,6 +1425,10 @@ function createDirectory() {
       creating.value = false
     })
 }
+
+// 文件预览相关状态
+const showPreviewDialog = ref(false)
+const previewFile = ref<FileInfo | null>(null)
 
 // 上传相关状态
 const uploadMode = ref<'file' | 'directory'>('file')

@@ -314,7 +314,10 @@ class FileService {
    * @param token 访问令牌
    */
   getVideoStreamUrl(path: string, token: string): string {
-    return `/api${apiEndpoints.file.media.videoStream}?path=${encodeURIComponent(path)}&token=${token}`
+    // 构建完整的 URL，用于直接在 <video>/<audio> 标签中使用
+    // 如果配置了 API_BASE_URL（如开发环境），使用完整 URL
+    // 否则使用相对路径（生产环境通过反向代理）
+    return `${apiConfig.baseURL}${apiEndpoints.file.media.videoStream}?path=${encodeURIComponent(path)}&token=${token}`
   }
 }
 

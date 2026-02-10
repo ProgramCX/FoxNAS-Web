@@ -5,6 +5,7 @@ import { resolve } from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue()],
+  assetsInclude: ['**/*.html'],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
@@ -15,7 +16,7 @@ export default defineConfig({
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'https://192.168.1.12:8848',
+        target: 'http://localhost:8848',
         changeOrigin: true,
         secure: false,
       },
