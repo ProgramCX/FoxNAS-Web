@@ -185,6 +185,7 @@ import {
   MenuOutline,
   DocumentTextOutline,
   StatsChartOutline,
+  VideocamOutline,
 } from '@vicons/ionicons5'
 
 const { t } = useI18n()
@@ -222,6 +223,7 @@ const activeKey = computed(() => {
   if (path.startsWith('/settings')) return 'settings'
   if (path.startsWith('/logs')) return 'logs'
   if (path.startsWith('/monitor')) return 'monitor'
+  if (path.startsWith('/transcode')) return 'transcode'
   return name
 })
 
@@ -271,6 +273,12 @@ const menuOptions = computed(() => [
     label: t('nav.monitor'),
     key: 'monitor',
     icon: renderIcon(StatsChartOutline),
+  },
+  {
+    label: t('nav.transcode'),
+    key: 'transcode',
+    icon: renderIcon(VideocamOutline),
+    show: hasPermission('TRANSCODE MANAGEMENT'),
   },
   {
     label: t('dashboard.systemInfo'),
@@ -350,6 +358,8 @@ function handleMenuClick(key: string) {
     router.push('/logs')
   } else if (key === 'monitor') {
     router.push('/monitor')
+  } else if (key === 'transcode') {
+    router.push('/transcode')
   } else if (key === 'info') {
     router.push('/')
   } else if (key === 'settings') {

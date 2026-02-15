@@ -158,6 +158,20 @@ export const apiEndpoints = {
     byTimeRange: '/monitor/getByMillRange',
     byLastTime: '/monitor/getRecentStatistics',
   },
+  // 转码任务管理
+  transcode: {
+    create: '/transcode/jobs/create',
+    checkFingerprint: '/transcode/jobs/check-fingerprint',
+    detail: '/transcode/jobs',          // GET /{jobId}
+    progress: '/transcode/jobs',        // GET /{jobId}/progress
+    list: '/transcode/jobs/list',
+    listAll: '/transcode/jobs/list-all',
+    stop: '/transcode/jobs',            // POST /{jobId}/stop
+    retry: '/transcode/jobs',           // POST /{jobId}/retry
+    delete: '/transcode/jobs',          // DELETE /{jobId}
+    deleteAll: '/transcode/jobs/delete-all',
+    statistics: '/transcode/jobs/statistics',
+  },
 }
 
 export default apiConfig

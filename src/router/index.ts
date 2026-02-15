@@ -106,6 +106,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/SystemMonitorView.vue'),
         meta: { title: '系统监控' },
       },
+      {
+        path: 'transcode',
+        name: 'TranscodeManagement',
+        component: () => import('@/views/TranscodeManagementView.vue'),
+        meta: { title: '转码管理' },
+      },
     ],
   },
   {

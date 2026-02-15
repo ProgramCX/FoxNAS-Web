@@ -328,3 +328,106 @@ export interface ChartExportOptions {
   pixelRatio?: number
   backgroundColor?: string
 }
+
+// ==================== 转码任务相关类型 ====================
+
+/**
+ * 转码任务状态
+ */
+export type TranscodeJobStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+
+/**
+ * 转码任务类型
+ */
+export type TranscodeJobType = 'VIDEO' | 'SUBTITLE'
+
+/**
+ * 转码任务实体
+ */
+export interface TranscodeJob {
+  id?: number
+  jobId: string
+  creatorId: string
+  videoPath: string
+  fingerprint?: string
+  jobType?: TranscodeJobType
+  audioTrackIndex?: number
+  subtitleTrackIndex?: number
+  status: TranscodeJobStatus
+  progress?: number
+  currentStage?: number
+  totalStages?: number
+  outputPath?: string
+  hlsPath?: string
+  errorMessage?: string
+  retryCount?: number
+  isImmediate?: boolean
+  createdAt?: string
+  updatedAt?: string
+  completedAt?: string
+}
+
+/**
+ * 创建转码任务请求
+ */
+export interface CreateTranscodeJobRequest {
+  videoPath: string
+  audioTrackIndex?: number
+  subtitleTrackIndex?: number
+  immediate?: boolean
+  fingerprint?: string
+}
+
+/**
+ * 指纹检查结果
+ */
+export interface FingerprintCheckResult {
+  existed: boolean
+  jobId?: string
+  fingerprint: string
+  hlsPath?: string
+  status?: string
+}
+
+/**
+ * 任务实时进度（getJobProgress）
+ */
+export interface TranscodeJobProgress {
+  progress: string
+  state: string
+  currentStage?: string
+  totalStages?: string
+}
+
+/**
+ * 转码任务统计
+ */
+export interface TranscodeStatistics {
+  total: number
+  pending: number
+  processing: number
+  completed: number
+  failed: number
+  cancelled: number
+  [key: string]: number
+}
+
+/**
+ * 后端通用 Result 包装
+ */
+export interface Result<T = unknown> {
+  code: number
+  message?: string
+  data?: T
+}
+
+/**
+ * IPage 分页结构 (MyBatis-Plus)
+ */
+export interface IPage<T> {
+  records: T[]
+  total: number
+  size: number
+  current: number
+  pages: number
+}
