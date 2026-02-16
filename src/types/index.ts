@@ -329,6 +329,93 @@ export interface ChartExportOptions {
   backgroundColor?: string
 }
 
+// ==================== 媒体信息类型 (MediaServiceController) ====================
+
+/**
+ * 媒体轨道信息 (对应后端 MediaInfoDTO.TrackDTO)
+ */
+export interface MediaTrackInfo {
+  index: number
+  type: 'video' | 'audio' | 'subtitle' | 'others'
+  codec: string
+  language?: string
+  title?: string
+}
+
+/**
+ * 媒体元数据 (对应后端 MediaInfoDTO)
+ */
+export interface MediaMetadata {
+  title?: string
+  durationSeconds: number
+  videoTrackCount: number
+  audioTrackCount: number
+  tracks: MediaTrackInfo[]
+}
+
+/**
+ * 指纹检查响应 (对应后端 FingerprintCheckResponse)
+ */
+export interface FingerprintCheckResponse {
+  existed: boolean
+  jobId?: string
+  fingerprint: string
+  hlsPath?: string
+}
+
+/**
+ * 转码提交请求 (对应后端 TranscodeRequest)
+ */
+export interface TranscodeSubmitRequest {
+  path: string
+  audioTrackIndex?: number
+  subtitleTrackIndex?: number
+  immediate?: boolean
+  fingerprint?: string
+}
+
+/**
+ * 转码提交响应
+ */
+export interface TranscodeSubmitResponse {
+  jobId: string
+  fingerprint: string
+  reused: string
+  hlsPath?: string
+  status?: string
+}
+
+/**
+ * 转码状态轮询响应 (对应后端 JobStatus)
+ */
+export interface TranscodeStatusResponse {
+  state: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+  progress: number
+  hlsPath?: string
+  stages?: number
+  currentStage?: number
+  message?: string
+}
+
+/**
+ * 字幕转码提交请求 (对应后端 SubtitleTranscodeRequest)
+ */
+export interface SubtitleTranscodeRequest {
+  path: string
+  subtitleTrackIndex: number
+}
+
+/**
+ * 字幕转码状态响应 (对应后端 SubtitleJobStatus)
+ */
+export interface SubtitleStatusResponse {
+  state: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  progress: number
+  vttPath?: string
+  message?: string
+  completeTime?: string
+}
+
 // ==================== 转码任务相关类型 ====================
 
 /**

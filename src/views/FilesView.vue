@@ -487,11 +487,33 @@
     <!-- 悬浮传输按钮 -->
     <FloatingTransferButton @click="showTransferDialog" />
 
+    <!-- 悬浮转码按钮 -->
+    <FloatingTranscodeButton @click="showTranscodeProgressDialog" />
+
     <!-- 文件预览对话框 -->
     <FilePreviewDialog
+      ref="filePreviewDialogRef"
       v-model:show="showPreviewDialog"
       :file="previewFile"
       @download="downloadFile"
+      @transcode="startTranscodeFlow"
+    />
+
+    <!-- 转码：轨道选择对话框 -->
+    <TrackSelectionDialog
+      ref="trackSelectionRef"
+      v-model:show="showTrackSelection"
+      :file-path="transcodeTargetPath"
+      :file-name="transcodeTargetName"
+      @submit="handleTrackSelected"
+    />
+
+    <!-- 转码：进度对话框 -->
+    <TranscodeProgressDialog
+      v-model:show="showTranscodeProgress"
+      :task="currentTranscodeTask"
+      @play="handleTranscodePlay"
+      @minimize="showTranscodeProgress = false"
     />
   </div>
 </template>
@@ -501,10 +523,15 @@ import { ref, computed, onMounted, onUnmounted, h, nextTick } from 'vue'
 import { useMessage, useDialog, useNotification, NButton, NIcon, NTag, NInput, NTooltip, NSpace, type DataTableColumns, type SelectOption, type DropdownOption, NDropdown, NBreadcrumb, NBreadcrumbItem, NDivider, NInputGroup } from 'naive-ui'
 import { useI18n } from 'vue-i18n'
 import { fileService } from '@/api/services/file'
+import { mediaService } from '@/api/services/media'
 import DownloadProgressDialog from '@/components/DownloadProgressDialog.vue'
 import FloatingTransferButton from '@/components/FloatingTransferButton.vue'
+import FloatingTranscodeButton from '@/components/transcode/FloatingTranscodeButton.vue'
+import TrackSelectionDialog from '@/components/transcode/TrackSelectionDialog.vue'
+import TranscodeProgressDialog from '@/components/transcode/TranscodeProgressDialog.vue'
 import FilePreviewDialog from '@/components/preview/FilePreviewDialog.vue'
 import { useDownloadProgressStore } from '@/stores/downloadProgress'
+import { useTranscodeProgressStore } from '@/stores/transcodeProgress'
 import type { FileInfo, AuthedDir, FileCategory } from '@/types'
 import {
   CloudUploadOutline, AddOutline, RefreshOutline, HomeOutline, FolderOutline,
@@ -514,7 +541,8 @@ import {
   OpenOutline, FolderOpenOutline,
   EllipsisVerticalOutline,
   ImageOutline, VideocamOutline, MusicalNotesOutline, CodeSlashOutline,
-  ArchiveOutline, ReaderOutline
+  ArchiveOutline, ReaderOutline,
+  SwapHorizontalOutline
 } from '@vicons/ionicons5'
 import { format } from 'date-fns'
 
@@ -706,6 +734,11 @@ const contextMenuOptions = computed<DropdownOption[]>(() => {
     }
     options.push({ label: t('files.download'), key: 'download', icon: () => h(NIcon, null, { default: () => h(DownloadOutline) }) })
     options.push({ type: 'divider', key: 'd1' })
+    // 视频文件显示转码选项
+    if (target.category === 'video') {
+      options.push({ label: t('preview.serverTranscode'), key: 'transcode', icon: () => h(NIcon, null, { default: () => h(SwapHorizontalOutline) }) })
+      options.push({ type: 'divider', key: 'd1b' })
+    }
     options.push({ label: t('files.copy'), key: 'copy', icon: () => h(NIcon, null, { default: () => h(CopyOutline) }) })
     options.push({ label: t('files.cut'), key: 'cut', icon: () => h(NIcon, null, { default: () => h(CutOutline) }) })
     options.push({ type: 'divider', key: 'd2' })
@@ -1116,6 +1149,9 @@ function handleContextMenuSelect(key: string) {
     case 'download':
       downloadFile(target)
       break
+    case 'transcode':
+      startTranscodeFlow(target)
+      break
     case 'copy':
       copyToClipboard([target], false)
       break
@@ -1172,6 +1208,149 @@ function showTransferDialog() {
     },
   })
 }
+
+// ============ 转码功能 ============
+const transcodeStore = useTranscodeProgressStore()
+const filePreviewDialogRef = ref<InstanceType<typeof FilePreviewDialog> | null>(null)
+const trackSelectionRef = ref<InstanceType<typeof TrackSelectionDialog> | null>(null)
+
+const showTrackSelection = ref(false)
+const showTranscodeProgress = ref(false)
+const transcodeTargetPath = ref('')
+const transcodeTargetName = ref('')
+const currentTranscodeJobId = ref<string | null>(null)
+
+const currentTranscodeTask = computed(() => {
+  if (!currentTranscodeJobId.value) return null
+  return transcodeStore.getTask(currentTranscodeJobId.value) || null
+})
+
+/**
+ * 启动转码流程：指纹检查 → 轨道选择 → 提交 → 进度轮询
+ */
+async function startTranscodeFlow(file: FileInfo) {
+  transcodeTargetPath.value = file.path
+  transcodeTargetName.value = file.name
+
+  // 第一步：检查指纹
+  message.loading(t('preview.checkingFingerprint'), { duration: 2000 })
+  try {
+    const res = await mediaService.checkFingerprint(file.path)
+
+    if (res) {
+     
+      if (res.existed && res.hlsPath) {
+        // 已转码完成，询问是否直接播放
+        dialog.info({
+          title: t('preview.alreadyTranscoded'),
+          content: t('preview.alreadyTranscodedDesc'),
+          positiveText: t('preview.playDirectly'),
+          negativeText: t('preview.reTranscode'),
+          onPositiveClick: () => {
+            // 直接用 HLS 播放：先打开对话框并设置 HLS 模式，再设置 file
+            showPreviewDialog.value = true
+            nextTick(() => {
+              filePreviewDialogRef.value?.playHls(res!.jobId!)
+              previewFile.value = file
+            })
+          },
+          onNegativeClick: () => {
+            // 重新转码 → 打开轨道选择
+            if (trackSelectionRef.value) {
+              trackSelectionRef.value.setFingerprint(res!.fingerprint)
+            }
+            showTrackSelection.value = true
+          },
+        })
+        return
+      }
+      // 未转码，打开轨道选择
+      if (trackSelectionRef.value) {
+        trackSelectionRef.value.setFingerprint(res.fingerprint)
+      }
+      showTrackSelection.value = true
+    } else {
+      message.error(res.message || t('preview.loadFailed'))
+    }
+  } catch (err) {
+    console.error('Fingerprint check failed:', err)
+    // fallback: 直接打开轨道选择
+    showTrackSelection.value = true
+  }
+}
+
+/**
+ * 轨道选择完成 → 提交转码
+ */
+async function handleTrackSelected(audioTrackIndex: number, subtitleTrackIndex: number, fingerprint?: string) {
+  showTrackSelection.value = false
+  try {
+    const res = await mediaService.submitTranscode({
+      path: transcodeTargetPath.value,
+      audioTrackIndex,
+      subtitleTrackIndex: subtitleTrackIndex >= 0 ? subtitleTrackIndex : undefined,
+      fingerprint,
+    })
+    
+    const jobId = res.jobId
+    message.success(t('preview.transcodeSubmitted'))
+
+    // 如果复用了已完成任务
+    if (res.reused === 'true' && res.hlsPath) {
+      transcodeStore.addTask(jobId, transcodeTargetPath.value, transcodeTargetName.value, 'completed')
+      transcodeStore.markCompleted(jobId, res.hlsPath)
+      currentTranscodeJobId.value = jobId
+      showTranscodeProgress.value = true
+      return
+    }
+
+      // 添加到 store 并开始轮询
+      transcodeStore.addTask(jobId, transcodeTargetPath.value, transcodeTargetName.value)
+      currentTranscodeJobId.value = jobId
+      showTranscodeProgress.value = true
+  } catch (err) {
+    console.error('Submit transcode failed:', err)
+    message.error(t('preview.transcodeSubmitFailed'))
+  }
+}
+
+/**
+ * 显示转码进度对话框（从悬浮按钮点击）
+ */
+function showTranscodeProgressDialog() {
+  // 选择最新的活跃任务
+  const allTasks = transcodeStore.allTasks
+  if (allTasks.length > 0) {
+    currentTranscodeJobId.value = allTasks[0].id
+  }
+  showTranscodeProgress.value = true
+}
+
+/**
+ * 转码完成 → 播放 HLS
+ */
+function handleTranscodePlay(jobId: string) {
+  const task = transcodeStore.getTask(jobId)
+  if (!task) return
+
+  showTranscodeProgress.value = false
+
+  // 先打开对话框并设置 HLS 模式，再设置 file（避免 watch 拦截）
+  showPreviewDialog.value = true
+  nextTick(() => {
+    filePreviewDialogRef.value?.playHls(jobId)
+    previewFile.value = {
+      name: task.fileName,
+      path: task.filePath,
+      type: 'file',
+      category: 'video',
+      size: 0,
+      lastModified: '',
+      canPlay: true,
+    } as FileInfo
+  })
+}
+
 
 async function downloadFile(file: FileInfo) {
   const taskId = `${file.path}-${Date.now()}`

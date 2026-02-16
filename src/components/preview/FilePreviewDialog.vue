@@ -34,7 +34,7 @@
 
     <div class="preview-body">
       <!-- Loading URL -->
-      <div v-if="loadingUrl || (!fileUrl && forcePreviewType)" class="preview-loading">
+      <div v-if="loadingUrl || (!fileUrl && forcePreviewType && forcePreviewType !== 'hls')" class="preview-loading">
         <n-spin size="large" />
       </div>
 
@@ -43,6 +43,14 @@
         v-else-if="previewType === 'image' && fileUrl"
         :src="fileUrl"
         :file-name="fileName"
+      />
+
+      <!-- HLS Transcoded Video Preview -->
+      <HLSVideoPlayer
+        v-else-if="previewType === 'hls' && hlsJobId"
+        :job-id="hlsJobId"
+        :file-name="fileName"
+        :subtitle-url="hlsSubtitleUrl"
       />
 
       <!-- Video Preview -->
@@ -111,6 +119,7 @@ import type { FileInfo } from '@/types'
 
 import ImagePreview from './ImagePreview.vue'
 import VideoPreview from './VideoPreview.vue'
+import HLSVideoPlayer from './HLSVideoPlayer.vue'
 import AudioPreview from './AudioPreview.vue'
 import PdfPreview from './PdfPreview.vue'
 import TextPreview from './TextPreview.vue'
@@ -128,6 +137,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   download: [file: FileInfo]
+  transcode: [file: FileInfo]
 }>()
 
 const isFullscreen = ref(false)
@@ -137,6 +147,8 @@ const playbackIssueType = ref<'video' | 'audio'>('video')
 const forcePreviewType = ref<string | null>(null)
 const fileUrl = ref('')
 const loadingUrl = ref(false)
+const hlsJobId = ref<string | null>(null)
+const hlsSubtitleUrl = ref<string | undefined>(undefined)
 
 const fileName = computed(() => props.file?.name || '')
 const mime = computed(() => props.file?.mime || '')
@@ -253,6 +265,8 @@ const modalStyle = computed(() => ({
  */
 watch(() => props.file, (file) => {
   if (!file) return
+  // 如果已经设置了 HLS 播放模式，跳过正常的预览类型判断
+  if (forcePreviewType.value === 'hls' && hlsJobId.value) return
   forcePreviewType.value = null
   fileUrl.value = ''
 
@@ -318,14 +332,22 @@ function handleUnsupportedChoice(type: 'video' | 'audio' | 'text' | 'pdf' | 'dow
 }
 
 /**
- * TODO: Implement server-side transcoding request
- * This should call the backend transcoding API and return a streamable URL
+ * 播放 HLS 转码后的视频
+ */
+function playHls(jobId: string, subtitleVttUrl?: string) {
+  hlsJobId.value = jobId
+  hlsSubtitleUrl.value = subtitleVttUrl
+  forcePreviewType.value = 'hls'
+}
+
+/**
+ * 请求服务器转码 — 通知父组件启动转码流程
  */
 function requestServerTranscode() {
-  // TODO: call backend transcoding API
-  // For now, show a message and fallback to try play
-  message.info(t('preview.transcodeNotAvailable'))
-  forcePreviewType.value = playbackIssueType.value
+  if (props.file) {
+    emit('transcode', props.file)
+  }
+  close()
 }
 
 function toggleFullscreen() {
@@ -340,12 +362,16 @@ function close() {
   visible.value = false
   forcePreviewType.value = null
   isFullscreen.value = false
+  hlsJobId.value = null
+  hlsSubtitleUrl.value = undefined
   // Revoke blob URL to free memory
   if (fileUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(fileUrl.value)
   }
   fileUrl.value = ''
 }
+
+defineExpose({ playHls })
 </script>
 
 <style scoped>

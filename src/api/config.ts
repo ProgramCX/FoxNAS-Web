@@ -73,6 +73,15 @@ export const apiEndpoints = {
       videoStream: '/file/media/video-stream',
       mediaType: '/file/media/media-type',
       prolongToken: '/file/media/prolong-token',
+      // 转码相关 (MediaServiceController)
+      checkFingerprint: '/file/media/transcode/check-fingerprint',
+      transcodeSubmit: '/file/media/transcode/submit',
+      transcodeStatus: '/file/media/transcode/status',  // GET /{jobId}
+      hlsStream: '/file/media/stream',                  // GET /{jobId}/playlist.m3u8
+      // 字幕相关
+      subtitleSubmit: '/file/media/subtitle/submit',
+      subtitleStatus: '/file/media/subtitle/status',     // GET /{jobId}
+      subtitleVtt: '/file/media/subtitle',               // GET /{jobId}
     },
   },
   // 硬件信息
