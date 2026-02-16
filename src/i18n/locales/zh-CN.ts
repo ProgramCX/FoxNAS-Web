@@ -943,4 +943,27 @@ export default {
     filterAll: '全部',
     filterByStatus: '按状态筛选',
   },
+
+  // 字幕选择器
+  subtitle: {
+    label: '字幕',
+    selectPlaceholder: '选择字幕文件...',
+    default: '默认',
+    browseServer: '浏览服务器',
+    browseServerTitle: '从服务器选择字幕文件',
+    clear: '清除字幕',
+    noSubtitles: '未找到字幕文件',
+    loadFailed: '加载字幕列表失败',
+    loadingSubtitle: '加载字幕中...',
+    subtitleLoaded: '字幕已加载',
+    subtitleLoadFailed: '字幕加载失败',
+  },
+
+  // 文件选择器
+  fileSelector: {
+    title: '选择文件',
+    browse: '浏览',
+    filterPlaceholder: '过滤文件...',
+    noFiles: '没有匹配的文件',
+  },
 }

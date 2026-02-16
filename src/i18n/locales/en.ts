@@ -953,4 +953,27 @@ export default {
     filterAll: 'All',
     filterByStatus: 'Filter by Status',
   },
+
+  // Subtitle Selector
+  subtitle: {
+    label: 'Subtitle',
+    selectPlaceholder: 'Select subtitle file...',
+    default: 'Default',
+    browseServer: 'Browse Server',
+    browseServerTitle: 'Select Subtitle File from Server',
+    clear: 'Clear Subtitle',
+    noSubtitles: 'No subtitle files found',
+    loadFailed: 'Failed to load subtitle list',
+    loadingSubtitle: 'Loading subtitle...',
+    subtitleLoaded: 'Subtitle loaded',
+    subtitleLoadFailed: 'Failed to load subtitle',
+  },
+
+  // File Selector
+  fileSelector: {
+    title: 'Select File',
+    browse: 'Browse',
+    filterPlaceholder: 'Filter files...',
+    noFiles: 'No matching files',
+  },
 }

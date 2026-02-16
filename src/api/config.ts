@@ -78,7 +78,7 @@ export const apiEndpoints = {
       transcodeSubmit: '/file/media/transcode/submit',
       transcodeStatus: '/file/media/transcode/status',  // GET /{jobId}
       hlsStream: '/file/media/stream',                  // GET /{jobId}/playlist.m3u8
-      // 字幕相关
+      // 字幕相关（内嵌字幕提取）
       subtitleSubmit: '/file/media/subtitle/submit',
       subtitleStatus: '/file/media/subtitle/status',     // GET /{jobId}
       subtitleVtt: '/file/media/subtitle',               // GET /{jobId}

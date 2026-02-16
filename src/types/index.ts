@@ -518,3 +518,31 @@ export interface IPage<T> {
   current: number
   pages: number
 }
+
+// ==================== 外挂字幕文件类型 ====================
+
+/**
+ * 字幕文件信息
+ */
+export interface SubtitleFileInfo {
+  /** 文件名 */
+  name: string
+  /** 文件路径 */
+  path: string
+  /** 文件大小 */
+  size: number
+  /** 最后修改时间 */
+  lastModified: number
+  /** 字幕类型 (ass, ssa, srt, vtt) */
+  type: string
+}
+
+/**
+ * 搜索字幕响应
+ */
+export interface SearchSubtitleResponse {
+  /** 字幕文件列表 */
+  subtitles: SubtitleFileInfo[]
+  /** 默认字幕路径（同名字幕） */
+  defaultSubtitlePath: string | null
+}

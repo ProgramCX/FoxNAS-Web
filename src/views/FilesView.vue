@@ -1247,12 +1247,11 @@ async function startTranscodeFlow(file: FileInfo) {
           positiveText: t('preview.playDirectly'),
           negativeText: t('preview.reTranscode'),
           onPositiveClick: () => {
-            // 直接用 HLS 播放：先打开对话框并设置 HLS 模式，再设置 file
+            // 直接用 HLS 播放：先设置 file + HLS 模式，再打开对话框
+            // 避免在打开瞬间先走兼容性判断导致循环弹窗
+            previewFile.value = file
+            filePreviewDialogRef.value?.playHls(res!.jobId!)
             showPreviewDialog.value = true
-            nextTick(() => {
-              filePreviewDialogRef.value?.playHls(res!.jobId!)
-              previewFile.value = file
-            })
           },
           onNegativeClick: () => {
             // 重新转码 → 打开轨道选择
@@ -1335,20 +1334,18 @@ function handleTranscodePlay(jobId: string) {
 
   showTranscodeProgress.value = false
 
-  // 先打开对话框并设置 HLS 模式，再设置 file（避免 watch 拦截）
+  // 先设置 file + HLS 模式，再打开对话框，避免兼容性弹窗死循环
+  previewFile.value = {
+    name: task.fileName,
+    path: task.filePath,
+    type: 'file',
+    category: 'video',
+    size: 0,
+    lastModified: '',
+    canPlay: true,
+  } as FileInfo
+  filePreviewDialogRef.value?.playHls(jobId)
   showPreviewDialog.value = true
-  nextTick(() => {
-    filePreviewDialogRef.value?.playHls(jobId)
-    previewFile.value = {
-      name: task.fileName,
-      path: task.filePath,
-      type: 'file',
-      category: 'video',
-      size: 0,
-      lastModified: '',
-      canPlay: true,
-    } as FileInfo
-  })
 }
 
 

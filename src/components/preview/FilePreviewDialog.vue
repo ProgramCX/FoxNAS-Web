@@ -1,6 +1,6 @@
 <template>
   <n-modal
-    v-model:show="visible"
+    v-model:show="previewModalVisible"
     preset="card"
     :style="modalStyle"
     :mask-closable="true"
@@ -51,6 +51,7 @@
         :job-id="hlsJobId"
         :file-name="fileName"
         :subtitle-url="hlsSubtitleUrl"
+        :video-path="props.file?.path || ''"
       />
 
       <!-- Video Preview -->
@@ -111,7 +112,6 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useMessage } from 'naive-ui'
 import { ExpandOutline, ContractOutline, DownloadOutline, CloseOutline } from '@vicons/ionicons5'
 import { apiConfig, apiEndpoints } from '@/api/config'
 import { fileService } from '@/api/services/file'
@@ -127,7 +127,6 @@ import PlaybackIssueDialog from './PlaybackIssueDialog.vue'
 import UnsupportedDialog from './UnsupportedDialog.vue'
 
 const { t } = useI18n()
-const message = useMessage()
 
 const visible = defineModel<boolean>('show', { default: false })
 
@@ -149,6 +148,18 @@ const fileUrl = ref('')
 const loadingUrl = ref(false)
 const hlsJobId = ref<string | null>(null)
 const hlsSubtitleUrl = ref<string | undefined>(undefined)
+const handlingPlaybackAction = ref(false)
+const handlingUnsupportedChoice = ref(false)
+let resolveRequestId = 0
+
+const previewModalVisible = computed({
+  get: () => visible.value && !showPlaybackIssue.value && !showUnsupported.value,
+  set: (val: boolean) => {
+    if (!val) {
+      close()
+    }
+  },
+})
 
 const fileName = computed(() => props.file?.name || '')
 const mime = computed(() => props.file?.mime || '')
@@ -174,6 +185,7 @@ const categoryLabel = computed(() => {
  * - For image/pdf/text: fetch via Authorization header and create Blob URL
  */
 async function resolveFileUrl(file: FileInfo) {
+  const requestId = ++resolveRequestId
   loadingUrl.value = true
   try {
     const cat = file.category || 'other'
@@ -181,6 +193,7 @@ async function resolveFileUrl(file: FileInfo) {
     if (cat === 'video' || cat === 'audio') {
       // Use media token-based streaming URL
       const token = await fileService.getMediaToken(file.path)
+      if (requestId !== resolveRequestId) return
       fileUrl.value = fileService.getVideoStreamUrl(file.path, token)
     } else {
       // Fetch content with auth header and create Blob URL
@@ -190,8 +203,10 @@ async function resolveFileUrl(file: FileInfo) {
       const response = await fetch(url, {
         headers: { Authorization: authToken ? `Bearer ${authToken}` : '' },
       })
+      if (requestId !== resolveRequestId) return
       if (!response.ok) throw new Error('Failed to fetch file')
       const rawBlob = await response.blob()
+      if (requestId !== resolveRequestId) return
       // 使用文件的实际 MIME 类型创建 blob，确保 SVG 等格式正确渲染
       const fileMime = (file.mime || '').toLowerCase()
       const blob = fileMime && rawBlob.type !== fileMime
@@ -204,10 +219,14 @@ async function resolveFileUrl(file: FileInfo) {
       fileUrl.value = URL.createObjectURL(blob)
     }
   } catch (error) {
-    console.error('Failed to resolve file URL:', error)
-    fileUrl.value = ''
+    if (requestId === resolveRequestId) {
+      console.error('Failed to resolve file URL:', error)
+      fileUrl.value = ''
+    }
   } finally {
-    loadingUrl.value = false
+    if (requestId === resolveRequestId) {
+      loadingUrl.value = false
+    }
   }
 }
 
@@ -263,11 +282,34 @@ const modalStyle = computed(() => ({
 /**
  * When file changes, determine preview type and possibly show dialogs
  */
-watch(() => props.file, (file) => {
-  if (!file) return
+function resetPreviewState() {
+  // 使所有未完成的 resolve 请求失效
+  resolveRequestId++
+
+  showPlaybackIssue.value = false
+  showUnsupported.value = false
+  forcePreviewType.value = null
+  loadingUrl.value = false
+  hlsJobId.value = null
+  hlsSubtitleUrl.value = undefined
+  playbackIssueType.value = 'video'
+
+  // Revoke blob URL to free memory
+  if (fileUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(fileUrl.value)
+  }
+  fileUrl.value = ''
+}
+
+function initPreviewByFile(file: FileInfo) {
   // 如果已经设置了 HLS 播放模式，跳过正常的预览类型判断
   if (forcePreviewType.value === 'hls' && hlsJobId.value) return
+
   forcePreviewType.value = null
+  // Revoke blob URL from previous file
+  if (fileUrl.value.startsWith('blob:')) {
+    URL.revokeObjectURL(fileUrl.value)
+  }
   fileUrl.value = ''
 
   const cat = file.category || 'other'
@@ -303,9 +345,50 @@ watch(() => props.file, (file) => {
     // Unsupported - show choice dialog
     showUnsupported.value = true
   }
-}, { immediate: true })
+}
+
+watch(
+  () => visible.value,
+  (show) => {
+    if (!show) {
+      resetPreviewState()
+      return
+    }
+    if (props.file) {
+      initPreviewByFile(props.file)
+    }
+  }
+)
+
+watch(
+  () => props.file,
+  (file) => {
+    if (!visible.value || !file) return
+    initPreviewByFile(file)
+  },
+  { immediate: true }
+)
+
+watch(
+  () => showPlaybackIssue.value,
+  (show) => {
+    if (!show && visible.value && !handlingPlaybackAction.value && !forcePreviewType.value && !hlsJobId.value) {
+      close()
+    }
+  }
+)
+
+watch(
+  () => showUnsupported.value,
+  (show) => {
+    if (!show && visible.value && !handlingUnsupportedChoice.value && !forcePreviewType.value && !hlsJobId.value) {
+      close()
+    }
+  }
+)
 
 function handlePlaybackAction(action: 'tryPlay' | 'download' | 'transcode') {
+  handlingPlaybackAction.value = true
   showPlaybackIssue.value = false
 
   if (action === 'tryPlay') {
@@ -317,9 +400,14 @@ function handlePlaybackAction(action: 'tryPlay' | 'download' | 'transcode') {
   } else if (action === 'transcode') {
     requestServerTranscode()
   }
+
+  Promise.resolve().then(() => {
+    handlingPlaybackAction.value = false
+  })
 }
 
 function handleUnsupportedChoice(type: 'video' | 'audio' | 'text' | 'pdf' | 'download') {
+  handlingUnsupportedChoice.value = true
   showUnsupported.value = false
 
   if (type === 'download') {
@@ -329,6 +417,10 @@ function handleUnsupportedChoice(type: 'video' | 'audio' | 'text' | 'pdf' | 'dow
     forcePreviewType.value = type
     if (props.file) resolveFileUrl(props.file)
   }
+
+  Promise.resolve().then(() => {
+    handlingUnsupportedChoice.value = false
+  })
 }
 
 /**
@@ -360,15 +452,7 @@ function handleDownload() {
 
 function close() {
   visible.value = false
-  forcePreviewType.value = null
   isFullscreen.value = false
-  hlsJobId.value = null
-  hlsSubtitleUrl.value = undefined
-  // Revoke blob URL to free memory
-  if (fileUrl.value.startsWith('blob:')) {
-    URL.revokeObjectURL(fileUrl.value)
-  }
-  fileUrl.value = ''
 }
 
 defineExpose({ playHls })
